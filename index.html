@@ -521,114 +521,7 @@ function copyPromo() {
   });
 }
 
-// =============================================
-// TELEGRAM АНАЛИТИКА v2
-// =============================================
-(function() {
-  var BOT = '8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI';
-  var CHAT = '2026776037';
-  var startTime = Date.now();
 
-  function tgSend(text) {
-    fetch('https://api.telegram.org/bot' + BOT + '/sendMessage', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({chat_id: CHAT, text: text, parse_mode: 'HTML'})
-    }).catch(function(){});
-  }
-
-  // Субайди из URL
-  var p = new URLSearchParams(window.location.search);
-  var sub1 = p.get('sub1') || '—';
-  var sub2 = p.get('sub2') || '—';
-  var sub3 = p.get('sub3') || '—';
-
-  // Устройство
-  var ua = navigator.userAgent;
-  var device = /tablet|ipad/i.test(ua) ? '📟 Планшет' :
-               /mobile|android|iphone/i.test(ua) ? '📱 Телефон' : '🖥 Десктоп';
-
-  // Страна через IP (бесплатный API)
-  var country = '—';
-  fetch('https://ipapi.co/json/')
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      country = (d.country_name || '—') + ' ' + (d.emoji_flag || '');
-
-      // 1. Визит
-      tgSend(
-        '👁 <b>Новый визит</b>\n' +
-        '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
-        '🌍 Zone: ' + sub1 + '\n' +
-        '🔗 Click: ' + sub2 + '\n' +
-        device + '\n' +
-        '🗺 Страна: ' + country
-      );
-    })
-    .catch(function(){
-      tgSend(
-        '👁 <b>Новый визит</b>\n' +
-        '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
-        '🌍 Zone: ' + sub1 + '\n' +
-        '🔗 Click: ' + sub2 + '\n' +
-        device
-      );
-    });
-
-  // 2. Клик на кнопку
-  var base = 'https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
-  var s1 = p.get('sub1'), s2 = p.get('sub2'), s3 = p.get('sub3');
-  if(s1) base += '&sub1=' + encodeURIComponent(s1);
-  if(s2) base += '&sub2=' + encodeURIComponent(s2);
-  if(s3) base += '&sub3=' + encodeURIComponent(s3);
-
-  var cta = document.querySelector('.btn-main');
-  if(cta) {
-    cta.href = base;
-    cta.addEventListener('click', function() {
-      var sec = Math.round((Date.now() - startTime) / 1000);
-      tgSend(
-        '🖱 <b>Клик на кнопку RESGATAR</b>\n' +
-        '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
-        '🌍 Zone: ' + sub1 + '\n' +
-        '🔗 Click: ' + sub2 + '\n' +
-        device + '\n' +
-        '🗺 Страна: ' + country + '\n' +
-        '⏱ Время на странице: ' + sec + ' сек'
-      );
-    });
-  }
-
-  // 3. Копирование промокода
-  var copyBtn = document.getElementById('copyBtn');
-  if(copyBtn) {
-    copyBtn.addEventListener('click', function() {
-      var sec = Math.round((Date.now() - startTime) / 1000);
-      tgSend(
-        '📋 <b>Скопировал промокод</b>\n' +
-        '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
-        '🌍 Zone: ' + sub1 + '\n' +
-        device + '\n' +
-        '🗺 Страна: ' + country + '\n' +
-        '⏱ Время на странице: ' + sec + ' сек'
-      );
-    });
-  }
-
-  // 4. Уход со страницы (время на сайте)
-  window.addEventListener('beforeunload', function() {
-    var sec = Math.round((Date.now() - startTime) / 1000);
-    tgSend(
-      '🚪 <b>Покинул страницу</b>\n' +
-      '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
-      '🌍 Zone: ' + sub1 + '\n' +
-      device + '\n' +
-      '🗺 Страна: ' + country + '\n' +
-      '⏱ Провёл на сайте: ' + sec + ' сек'
-    );
-  });
-
-})();
 
 
 (function(){
@@ -790,7 +683,7 @@ function showWin() {
   if(p.get('sub2')) base += '&sub2=' + encodeURIComponent(p.get('sub2'));
   if(p.get('sub3')) base += '&sub3=' + encodeURIComponent(p.get('sub3'));
 
-  document.getElementById('winCta').href = base;
+  // href обновляется аналитикой
   document.getElementById('winCta').addEventListener('click', function() {
     tgWheelClaim(prize);
   });
@@ -849,6 +742,100 @@ function tgWheelClaim(prize) {
   }).catch(()=>{});
 }
 // ===== КОНЕЦ КОЛЕСА =====
+
+
+// =============================================
+// АНАЛИТИКА v3 — Google Sheets + Telegram
+// =============================================
+(function(){
+  var SHEETS = 'https://script.google.com/macros/s/AKfycbzX6kcREZcnHQ5AYFfzjZcVnSc1lfLaadXBL53V0K0fD1E13FKBDqOLGIKsqo57b2RO/exec';
+  var BOT    = '8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI';
+  var CHAT   = '2026776037';
+  var t0     = Date.now();
+
+  var p      = new URLSearchParams(location.search);
+  var sub1   = p.get('sub1') || '';
+  var sub2   = p.get('sub2') || '';
+  var sub3   = p.get('sub3') || '';
+  var ref    = document.referrer || '';
+  var dev    = /tablet|ipad/i.test(navigator.userAgent) ? 'Tablet' :
+               /mobile|android|iphone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
+  var country = '';
+
+  // Получаем страну
+  fetch('https://ipapi.co/json/')
+    .then(r=>r.json())
+    .then(d=>{ country = (d.country_name||'') + ' ' + (d.emoji_flag||''); onReady(); })
+    .catch(()=>{ onReady(); });
+
+  function log(event, extra) {
+    extra = extra || {};
+    var sec = Math.round((Date.now()-t0)/1000);
+    var params = new URLSearchParams({
+      event:    event,
+      sub1:     sub1,
+      sub2:     sub2,
+      sub3:     sub3,
+      country:  country,
+      device:   dev,
+      referrer: ref.substring(0,80),
+      time_sec: sec,
+      prize:    extra.prize || ''
+    });
+    // Google Sheets
+    fetch(SHEETS + '?' + params.toString()).catch(()=>{});
+
+    // Telegram
+    var icon = {
+      visit:        '👁', click_button: '🖱', promo_copy:  '📋',
+      wheel_spin:   '🎡', wheel_win:    '🎉', wheel_claim: '💰',
+      page_leave:   '🚪'
+    }[event] || '📌';
+
+    var txt = icon+' <b>'+event.replace('_',' ').toUpperCase()+'</b>\n'+
+      '📅 '+new Date().toLocaleString('ru-RU')+'\n'+
+      '🌍 Zone: '+(sub1||'—')+'\n'+
+      (extra.prize ? '🏆 Приз: '+extra.prize+'\n' : '')+
+      (dev==='Mobile'?'📱':'🖥')+' '+dev+'\n'+
+      '🗺 '+( country||'—')+'\n'+
+      '⏱ '+sec+' сек';
+
+    fetch('https://api.telegram.org/bot'+BOT+'/sendMessage',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({chat_id:CHAT, text:txt, parse_mode:'HTML'})
+    }).catch(()=>{});
+  }
+
+  function onReady() {
+    // Визит
+    log('visit');
+
+    // Кнопка RESGATAR
+    var base = 'https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
+    if(sub1) base += '&sub1='+encodeURIComponent(sub1);
+    if(sub2) base += '&sub2='+encodeURIComponent(sub2);
+    if(sub3) base += '&sub3='+encodeURIComponent(sub3);
+
+    document.querySelectorAll('.btn-main, .win-cta').forEach(function(btn){
+      btn.href = base;
+      btn.addEventListener('click', function(){ log('click_button'); });
+    });
+
+    // Промокод
+    var cb = document.getElementById('copyBtn');
+    if(cb) cb.addEventListener('click', function(){ log('promo_copy'); });
+
+    // Уход
+    window.addEventListener('beforeunload', function(){ log('page_leave'); });
+  }
+
+  // Глобальные функции для колеса
+  window.logWheelSpin  = function(){ log('wheel_spin'); };
+  window.logWheelWin   = function(prize){ log('wheel_win',  {prize:prize}); };
+  window.logWheelClaim = function(prize){ log('wheel_claim',{prize:prize}); };
+
+})();
 
 </script>
 
