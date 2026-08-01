@@ -324,68 +324,111 @@ function copyPromo() {
 }
 
 // =============================================
-// TELEGRAM АНАЛИТИКА
+// TELEGRAM АНАЛИТИКА v2
 // =============================================
 (function() {
   var BOT = '8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI';
   var CHAT = '2026776037';
+  var startTime = Date.now();
 
   function tgSend(text) {
-    var url = 'https://api.telegram.org/bot' + BOT + '/sendMessage';
-    fetch(url, {
+    fetch('https://api.telegram.org/bot' + BOT + '/sendMessage', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({chat_id: CHAT, text: text, parse_mode: 'HTML'})
     }).catch(function(){});
   }
 
-  // Получаем субайди из URL
+  // Субайди из URL
   var p = new URLSearchParams(window.location.search);
   var sub1 = p.get('sub1') || '—';
   var sub2 = p.get('sub2') || '—';
-  var ref  = document.referrer || '—';
+  var sub3 = p.get('sub3') || '—';
 
-  // 1. Визит на лендинг
-  tgSend(
-    '👁 <b>Новый визит</b>\n' +
-    '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
-    '🌍 Zone: ' + sub1 + '\n' +
-    '🔗 Click: ' + sub2 + '\n' +
-    '📎 Referrer: ' + ref.substring(0, 60)
-  );
+  // Устройство
+  var ua = navigator.userAgent;
+  var device = /tablet|ipad/i.test(ua) ? '📟 Планшет' :
+               /mobile|android|iphone/i.test(ua) ? '📱 Телефон' : '🖥 Десктоп';
 
-  // 2. Клик на кнопку "RESGATAR BÔNUS"
+  // Страна через IP (бесплатный API)
+  var country = '—';
+  fetch('https://ipapi.co/json/')
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      country = (d.country_name || '—') + ' ' + (d.emoji_flag || '');
+
+      // 1. Визит
+      tgSend(
+        '👁 <b>Новый визит</b>\n' +
+        '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
+        '🌍 Zone: ' + sub1 + '\n' +
+        '🔗 Click: ' + sub2 + '\n' +
+        device + '\n' +
+        '🗺 Страна: ' + country
+      );
+    })
+    .catch(function(){
+      tgSend(
+        '👁 <b>Новый визит</b>\n' +
+        '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
+        '🌍 Zone: ' + sub1 + '\n' +
+        '🔗 Click: ' + sub2 + '\n' +
+        device
+      );
+    });
+
+  // 2. Клик на кнопку
+  var base = 'https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
+  var s1 = p.get('sub1'), s2 = p.get('sub2'), s3 = p.get('sub3');
+  if(s1) base += '&sub1=' + encodeURIComponent(s1);
+  if(s2) base += '&sub2=' + encodeURIComponent(s2);
+  if(s3) base += '&sub3=' + encodeURIComponent(s3);
+
   var cta = document.querySelector('.btn-main');
-  if (cta) {
+  if(cta) {
+    cta.href = base;
     cta.addEventListener('click', function() {
+      var sec = Math.round((Date.now() - startTime) / 1000);
       tgSend(
         '🖱 <b>Клик на кнопку RESGATAR</b>\n' +
         '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
         '🌍 Zone: ' + sub1 + '\n' +
-        '🔗 Click: ' + sub2
+        '🔗 Click: ' + sub2 + '\n' +
+        device + '\n' +
+        '🗺 Страна: ' + country + '\n' +
+        '⏱ Время на странице: ' + sec + ' сек'
       );
     });
   }
 
   // 3. Копирование промокода
   var copyBtn = document.getElementById('copyBtn');
-  if (copyBtn) {
+  if(copyBtn) {
     copyBtn.addEventListener('click', function() {
+      var sec = Math.round((Date.now() - startTime) / 1000);
       tgSend(
         '📋 <b>Скопировал промокод</b>\n' +
         '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
-        '🌍 Zone: ' + sub1
+        '🌍 Zone: ' + sub1 + '\n' +
+        device + '\n' +
+        '🗺 Страна: ' + country + '\n' +
+        '⏱ Время на странице: ' + sec + ' сек'
       );
     });
   }
 
-  // 4. Обновляем ссылку с субайди
-  var base = 'https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
-  var s1 = p.get('sub1'), s2 = p.get('sub2'), s3 = p.get('sub3');
-  if(s1) base += '&sub1=' + encodeURIComponent(s1);
-  if(s2) base += '&sub2=' + encodeURIComponent(s2);
-  if(s3) base += '&sub3=' + encodeURIComponent(s3);
-  if(cta) cta.href = base;
+  // 4. Уход со страницы (время на сайте)
+  window.addEventListener('beforeunload', function() {
+    var sec = Math.round((Date.now() - startTime) / 1000);
+    tgSend(
+      '🚪 <b>Покинул страницу</b>\n' +
+      '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
+      '🌍 Zone: ' + sub1 + '\n' +
+      device + '\n' +
+      '🗺 Страна: ' + country + '\n' +
+      '⏱ Провёл на сайте: ' + sec + ' сек'
+    );
+  });
 
 })();
 
