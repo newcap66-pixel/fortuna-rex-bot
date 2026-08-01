@@ -322,6 +322,73 @@ function copyPromo() {
     }, 2000);
   });
 }
+
+// =============================================
+// TELEGRAM АНАЛИТИКА
+// =============================================
+(function() {
+  var BOT = '8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI';
+  var CHAT = '2026776037';
+
+  function tgSend(text) {
+    var url = 'https://api.telegram.org/bot' + BOT + '/sendMessage';
+    fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({chat_id: CHAT, text: text, parse_mode: 'HTML'})
+    }).catch(function(){});
+  }
+
+  // Получаем субайди из URL
+  var p = new URLSearchParams(window.location.search);
+  var sub1 = p.get('sub1') || '—';
+  var sub2 = p.get('sub2') || '—';
+  var ref  = document.referrer || '—';
+
+  // 1. Визит на лендинг
+  tgSend(
+    '👁 <b>Новый визит</b>\n' +
+    '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
+    '🌍 Zone: ' + sub1 + '\n' +
+    '🔗 Click: ' + sub2 + '\n' +
+    '📎 Referrer: ' + ref.substring(0, 60)
+  );
+
+  // 2. Клик на кнопку "RESGATAR BÔNUS"
+  var cta = document.querySelector('.btn-main');
+  if (cta) {
+    cta.addEventListener('click', function() {
+      tgSend(
+        '🖱 <b>Клик на кнопку RESGATAR</b>\n' +
+        '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
+        '🌍 Zone: ' + sub1 + '\n' +
+        '🔗 Click: ' + sub2
+      );
+    });
+  }
+
+  // 3. Копирование промокода
+  var copyBtn = document.getElementById('copyBtn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function() {
+      tgSend(
+        '📋 <b>Скопировал промокод</b>\n' +
+        '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
+        '🌍 Zone: ' + sub1
+      );
+    });
+  }
+
+  // 4. Обновляем ссылку с субайди
+  var base = 'https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
+  var s1 = p.get('sub1'), s2 = p.get('sub2'), s3 = p.get('sub3');
+  if(s1) base += '&sub1=' + encodeURIComponent(s1);
+  if(s2) base += '&sub2=' + encodeURIComponent(s2);
+  if(s3) base += '&sub3=' + encodeURIComponent(s3);
+  if(cta) cta.href = base;
+
+})();
+
 </script>
 
 </body>
