@@ -842,7 +842,7 @@ function tgWheelClaim(prize) {
 // АНАЛИТИКА — Google Sheets + Telegram
 // =============================================
 (function(){
-  var SHEETS = 'https://script.google.com/macros/s/AKfycbykgQQeEdduJThuIwz7jlAwZ8Bp3x_bmTwMLy_cIrc/exec';
+  var SHEETS = 'https://script.google.com/macros/s/AKfycbzbTaTSFfyQX-oh1aOx3wYk_DH60dpUcmCbjXCZEMM2SeddUOFacyUtQmWjUeCOuARG/exec';
   var BOT    = '8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI';
   var CHAT   = '2026776037';
   var t0     = Date.now();
@@ -856,7 +856,6 @@ function tgWheelClaim(prize) {
              /mobile|android|iphone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
   var country = '';
 
-  // Страна
   fetch('https://ipapi.co/json/')
     .then(r=>r.json())
     .then(d=>{ country=(d.country_name||'')+(d.emoji_flag?' '+d.emoji_flag:''); onReady(); })
@@ -867,7 +866,8 @@ function tgWheelClaim(prize) {
     var sec = Math.round((Date.now()-t0)/1000);
 
     // Google Sheets
-    var url = SHEETS+'?event='+encodeURIComponent(event)+
+    var url = SHEETS+
+      '?event='+encodeURIComponent(event)+
       '&sub1='+encodeURIComponent(sub1)+
       '&sub2='+encodeURIComponent(sub2)+
       '&sub3='+encodeURIComponent(sub3)+
@@ -879,9 +879,9 @@ function tgWheelClaim(prize) {
     fetch(url).catch(()=>{});
 
     // Telegram
-    var icons = {visit:'👁',click_button:'🖱',promo_copy:'📋',wheel_spin:'🎡',wheel_win:'🎉',wheel_claim:'💰',page_leave:'🚪'};
-    var icon = icons[event] || '📌';
-    var txt = icon+' <b>'+event.toUpperCase().replace('_',' ')+'</b>\n'+
+    var icons={visit:'👁',click_button:'🖱',promo_copy:'📋',wheel_spin:'🎡',wheel_win:'🎉',wheel_claim:'💰',page_leave:'🚪',conversion:'💵'};
+    var icon=icons[event]||'📌';
+    var txt=icon+' <b>'+event.toUpperCase().replace(/_/g,' ')+'</b>\n'+
       '📅 '+new Date().toLocaleString('ru-RU')+'\n'+
       '🌍 Zone: '+(sub1||'—')+'\n'+
       '🔗 Click: '+(sub2||'—')+'\n'+
@@ -899,7 +899,6 @@ function tgWheelClaim(prize) {
   function onReady(){
     log('visit');
 
-    // Трекер ссылка с субайди
     var base='https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
     if(sub1) base+='&sub1='+encodeURIComponent(sub1);
     if(sub2) base+='&sub2='+encodeURIComponent(sub2);
@@ -916,7 +915,6 @@ function tgWheelClaim(prize) {
     window.addEventListener('beforeunload',function(){log('page_leave');});
   }
 
-  // Колесо
   window.logWheelSpin  = function(){    log('wheel_spin'); };
   window.logWheelWin   = function(p){   log('wheel_win',  {prize:p}); };
   window.logWheelClaim = function(p){   log('wheel_claim',{prize:p}); };
