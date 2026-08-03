@@ -72,9 +72,12 @@ var country = '';
 
 function buildLink() {
   var u = TRACK;
-  if (sub1) u += '&sub1=' + encodeURIComponent(sub1);
-  if (sub2) u += '&sub2=' + encodeURIComponent(sub2);
-  if (sub3) u += '&sub3=' + encodeURIComponent(sub3);
+  // maglead работает на Scaleo. click_id Propeller -> aff_click_id (для постбека).
+  // зона/кампания -> sub_id1..3 (для сегментации).
+  if (sub2) u += '&aff_click_id=' + encodeURIComponent(sub2);
+  if (sub1) u += '&sub_id1=' + encodeURIComponent(sub1);
+  if (sub2) u += '&sub_id2=' + encodeURIComponent(sub2);
+  if (sub3) u += '&sub_id3=' + encodeURIComponent(sub3);
   return u;
 }
 
