@@ -39,6 +39,10 @@ A360_BASE = os.getenv(
 # Пакет приветствия A360 (подтверждён на экране регистрации)
 BONUS_TEXT_SHORT = "até 8250 BRL + 150 FS"
 
+# Ссылки на наши ресурсы (кнопки в приветствии и постах)
+GROUP_LINK = os.getenv("GROUP_LINK", "https://t.me/fortunarex_slots")
+BOT_LINK = os.getenv("BOT_LINK", "https://t.me/FortunaRex_bot")
+
 BASE_DIR = Path(__file__).parent
 SLOTS_FILE = BASE_DIR / "slots.json"
 STATS_FILE = BASE_DIR / "stats.json"
@@ -305,17 +309,31 @@ async def cmd_start(msg: Message, command: CommandObject):
         set_user_zone(msg.from_user.id, command.args)
         log.info(f"Zona capturada p/ user {msg.from_user.id}: {clean(command.args)}")
 
+    # Ссылка оффера с зоной юзера (для главной CTA-кнопки бонуса)
+    offer = build_offer_url(A360_BASE, zone=get_user_zone(msg.from_user.id), click_id=str(msg.from_user.id))
+
     text = (
-        "🎰 <b>Bem-vindo ao Fortuna Rex!</b>\n\n"
-        "🔥 Os melhores slots com os maiores multiplicadores\n"
-        f"💰 Bônus de boas-vindas: <b>{BONUS_TEXT_SHORT}</b>\n\n"
-        "👇 Escolha uma categoria:"
+        "🎰 <b>Bem-vindo ao FORTUNA REX!</b>\n"
+        "O seu cassino de slots quentes 🔥\n\n"
+        "✨ <b>O que você ganha aqui:</b>\n"
+        "🎁 Bônus de boas-vindas: <b>" + BONUS_TEXT_SHORT + "</b>\n"
+        "🎰 Os slots mais populares: Gates of Olympus, Fortune Tiger, Money Pot e mais\n"
+        "💥 Multiplicadores de até <b>x20.000</b>\n"
+        "💚 Saque rápido via <b>Pix</b>\n"
+        "⚡ Cadastro em <b>1 clique</b> — Brasil / BRL\n\n"
+        "👇 Pegue seu bônus ou explore os jogos:"
     )
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=f"🎁 PEGAR BÔNUS ({BONUS_TEXT_SHORT})", url=offer)],
+        [InlineKeyboardButton(text="🎰 Ver todos os slots", callback_data="menu_new")],
+        [InlineKeyboardButton(text="🔥 Slot do Dia", callback_data="daily")],
+        [InlineKeyboardButton(text="📢 Entrar no nosso canal", url=GROUP_LINK)],
+    ])
     banner = resolve_photo("images/banner_start.jpg")
     if banner:
-        await msg.answer_photo(photo=banner, caption=text, reply_markup=categories_kb(), parse_mode="HTML")
+        await msg.answer_photo(photo=banner, caption=text, reply_markup=kb, parse_mode="HTML")
     else:
-        await msg.answer(text, reply_markup=categories_kb(), parse_mode="HTML")
+        await msg.answer(text, reply_markup=kb, parse_mode="HTML")
 
 @dp.callback_query(F.data == "menu_new")
 async def cb_menu_new(cb: CallbackQuery):
@@ -654,8 +672,7 @@ async def cmd_help(msg: Message):
 
 # ── /invite — готовые посты для продвижения ──────────────────────────────────
 
-CHANNEL_LINK = os.getenv("CHANNEL_LINK", "https://t.me/+72lKgWkkgFc3MDc6")
-BOT_LINK = os.getenv("BOT_LINK", "https://t.me/FortunaRex_bot")
+CHANNEL_LINK = os.getenv("CHANNEL_LINK", "https://t.me/fortunarex_slots")
 
 @dp.message(Command("invite"))
 async def cmd_invite(msg: Message):
