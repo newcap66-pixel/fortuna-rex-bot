@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import re
+import random
 import logging
 from pathlib import Path
 from datetime import datetime, timedelta
@@ -158,6 +159,23 @@ def get_daily_slot() -> dict | None:
     slots = load_slots()
     return next((s for s in slots if s["id"] == slot_id), None)
 
+def pick_random_daily_slot() -> dict | None:
+    """
+    Выбирает случайный слот для авто-поста слота дня.
+    Не повторяет вчерашний (last_daily_id). Сохраняет выбор в daily.json.
+    Используется планировщиком; ручной /setdaily имеет приоритет, если задан явно.
+    """
+    slots = load_slots()
+    if not slots:
+        return None
+    daily = load_daily()
+    last_id = daily.get("last_daily_id")
+    pool = [s for s in slots if s["id"] != last_id] or slots
+    chosen = random.choice(pool)
+    daily["last_daily_id"] = chosen["id"]
+    save_daily(daily)
+    return chosen
+
 def resolve_photo(image_value: str):
     if not image_value:
         return None
@@ -258,8 +276,9 @@ def daily_caption(slot: dict) -> str:
         f"⚡ Jogue agora e aproveite os maiores multiplicadores do dia!"
     )
 
-async def send_daily_slot(bot: Bot, chat_id: str | int):
-    slot = get_daily_slot()
+async def send_daily_slot(bot: Bot, chat_id: str | int, slot: dict | None = None):
+    if slot is None:
+        slot = get_daily_slot()
     if not slot:
         log.warning("Slot do dia não encontrado")
         return
@@ -403,15 +422,19 @@ async def daily_scheduler(bot: Bot):
             log.warning("CHANNEL_ID não configurado — post diário não enviado")
             continue
 
-        # Чередуем: чётный день → слот дня, нечётный → промо-баннер (ротация по кругу)
+        # Чередуем: чётный день → слот дня (случайный, без повтора), нечётный → промо (ротация)
         daily = load_daily()
         counter = int(daily.get("post_counter", 0))
         if counter % 2 == 0:
-            await send_daily_slot(bot, CHANNEL_ID)
+            slot = pick_random_daily_slot()
+            await send_daily_slot(bot, CHANNEL_ID, slot)
         else:
             promo_index = int(daily.get("promo_index", 0))
             await send_promo_post(bot, CHANNEL_ID, promo_index)
+            # перечитываем daily, т.к. pick_random_daily_slot мог его изменить
+            daily = load_daily()
             daily["promo_index"] = (promo_index + 1) % len(PROMO_POSTS)
+        daily = load_daily()
         daily["post_counter"] = counter + 1
         save_daily(daily)
 
