@@ -278,8 +278,14 @@ async def send_daily_slot(bot: Bot, chat_id: str | int):
     except Exception as e:
         log.error(f"Erro ao enviar slot do dia: {e}")
 
-# ── Промо-посты для группы (ротация баннеров) ─────────────────────────────────
-# Файлы лежат в images/promo/. Кнопка ведёт напрямую на A360 (без зоны — общий трафик группы).
+# ── Промо-посты для группы (ротация) ──────────────────────────────────────────
+# Баннеры в images/promo/. В caption есть слово-ссылка <a href> на A360 + кнопка снизу.
+# PROMO_LINK — ссылка, вшитая в «промокод»/CTA (пока = A360_BASE; заменить, когда Andrew даст код).
+
+PROMO_LINK = os.getenv("PROMO_LINK", A360_BASE)
+
+def _link(anchor: str) -> str:
+    return f'<a href="{PROMO_LINK}">{anchor}</a>'
 
 PROMO_POSTS = [
     {
@@ -289,7 +295,8 @@ PROMO_POSTS = [
             "Os melhores jogos, só aqui 🔥\n"
             "Gates of Olympus • Fortune Tiger • Money Pot e muito mais!\n\n"
             "🎁 Bônus de boas-vindas: <b>" + BONUS_TEXT_SHORT + "</b>\n"
-            "💚 Saque rápido via Pix"
+            "💚 Saque rápido via Pix\n\n"
+            "👉 " + _link("JOGAR AGORA")
         ),
         "button": "🎮 Jogar agora",
     },
@@ -300,9 +307,22 @@ PROMO_POSTS = [
             "💰 <b>até 8250 BRL + 150 FS</b>\n\n"
             "✅ Bônus no primeiro depósito\n"
             "✅ 150 rodadas grátis\n"
-            "⚡ Saque via Pix • Cadastro em 1 clique"
+            "⚡ Saque via Pix • Cadastro em 1 clique\n\n"
+            "👉 " + _link("RESGATAR BÔNUS")
         ),
         "button": "🎁 Resgatar bônus",
+    },
+    {
+        # Código Secreto — вариант 1 ("забери свой код здесь", честнее)
+        "image": "images/promo/post_bonus.jpg",
+        "caption": (
+            "🎁 <b>CÓDIGO SECRETO DO DIA</b> 🔒\n\n"
+            "Só para seguidores do canal Fortuna Rex!\n"
+            "💰 Ative e ganhe bônus até 8250 BRL + 150 FS\n\n"
+            "⚠️ Pegue o seu agora — todo dia tem novidade aqui!\n\n"
+            "👉 " + _link("PEGAR MEU CÓDIGO")
+        ),
+        "button": "🎁 Pegar meu código",
     },
     {
         "image": "images/promo/post_bigwin.jpg",
@@ -311,7 +331,8 @@ PROMO_POSTS = [
             "💥 Multiplicadores de até <b>x20.000</b>\n"
             "🔥 Os slots mais quentes estão pagando agora\n\n"
             "💰 Sua vez de ganhar!\n"
-            "🎁 + Bônus até 8250 BRL + 150 FS"
+            "🎁 + Bônus até 8250 BRL + 150 FS\n\n"
+            "👉 " + _link("JOGAR AGORA")
         ),
         "button": "🎮 Jogar agora",
     },
@@ -319,27 +340,38 @@ PROMO_POSTS = [
         "image": "images/promo/post_vip.jpg",
         "caption": (
             "👑 <b>ACESSO VIP FORTUNA REX</b>\n\n"
-            "Os melhores slots + bônus exclusivos\n"
-            "💎 Tratamento VIP para nossos jogadores\n\n"
-            "🎁 Bônus de boas-vindas: <b>" + BONUS_TEXT_SHORT + "</b>\n"
-            "💚 Saque via Pix"
+            "Você faz parte do clube dos melhores 💎\n"
+            "🎰 Slots exclusivos + bônus especiais\n"
+            "🎁 até 8250 BRL + 150 FS\n\n"
+            "👉 " + _link("ENTRAR AGORA")
         ),
         "button": "👑 Entrar agora",
     },
+    {
+        # Código Secreto — вариант 2 ("código secreto: [клик]", как просил)
+        "image": "images/promo/post_exclusivos.jpg",
+        "caption": (
+            "🔒 <b>CÓDIGO SECRETO — SÓ AQUI</b>\n\n"
+            "Código exclusivo dos seguidores Fortuna Rex 🎁\n"
+            "💰 Bônus até 8250 BRL + 150 FS\n\n"
+            "🏷 Seu código: 👉 " + _link("[ RESGATAR CÓDIGO ]") + "\n"
+            "⚡ Válido hoje — não perca!"
+        ),
+        "button": "🎁 Resgatar código",
+    },
 ]
 
-def promo_kb() -> InlineKeyboardMarkup:
-    # Прямой кликлинк A360 без зоны (общий трафик группы)
+def send_promo_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎁 Pegar bônus (até 8250 BRL + 150 FS)", url=A360_BASE)],
+        [InlineKeyboardButton(text="🎁 Pegar bônus (até 8250 BRL + 150 FS)", url=PROMO_LINK)],
     ])
 
 async def send_promo_post(bot: Bot, chat_id: str | int, index: int):
-    """Отправляет промо-баннер по индексу (с ротацией по кругу)."""
+    """Отправляет промо-пост по индексу (с ротацией по кругу). Слово-ссылка + кнопка."""
     promo = PROMO_POSTS[index % len(PROMO_POSTS)]
     photo = resolve_photo(promo["image"])
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=promo["button"], url=A360_BASE)],
+        [InlineKeyboardButton(text=promo["button"], url=PROMO_LINK)],
     ])
     try:
         if photo:
@@ -347,8 +379,8 @@ async def send_promo_post(bot: Bot, chat_id: str | int, index: int):
                                  reply_markup=kb, parse_mode="HTML")
         else:
             await bot.send_message(chat_id=chat_id, text=promo["caption"],
-                                   reply_markup=kb, parse_mode="HTML")
-        log.info(f"Promo enviado para {chat_id}: {promo['image']}")
+                                   reply_markup=kb, parse_mode="HTML", disable_web_page_preview=True)
+        log.info(f"Promo enviado para {chat_id}: idx={index % len(PROMO_POSTS)}")
     except Exception as e:
         log.error(f"Erro ao enviar promo: {e}")
 
