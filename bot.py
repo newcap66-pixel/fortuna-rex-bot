@@ -278,6 +278,80 @@ async def send_daily_slot(bot: Bot, chat_id: str | int):
     except Exception as e:
         log.error(f"Erro ao enviar slot do dia: {e}")
 
+# ── Промо-посты для группы (ротация баннеров) ─────────────────────────────────
+# Файлы лежат в images/promo/. Кнопка ведёт напрямую на A360 (без зоны — общий трафик группы).
+
+PROMO_POSTS = [
+    {
+        "image": "images/promo/post_exclusivos.jpg",
+        "caption": (
+            "🎰 <b>SLOTS EXCLUSIVOS A360</b>\n\n"
+            "Os melhores jogos, só aqui 🔥\n"
+            "Gates of Olympus • Fortune Tiger • Money Pot e muito mais!\n\n"
+            "🎁 Bônus de boas-vindas: <b>" + BONUS_TEXT_SHORT + "</b>\n"
+            "💚 Saque rápido via Pix"
+        ),
+        "button": "🎮 Jogar agora",
+    },
+    {
+        "image": "images/promo/post_bonus.jpg",
+        "caption": (
+            "🎁 <b>BÔNUS DE BOAS-VINDAS</b>\n\n"
+            "💰 <b>até 8250 BRL + 150 FS</b>\n\n"
+            "✅ Bônus no primeiro depósito\n"
+            "✅ 150 rodadas grátis\n"
+            "⚡ Saque via Pix • Cadastro em 1 clique"
+        ),
+        "button": "🎁 Resgatar bônus",
+    },
+    {
+        "image": "images/promo/post_bigwin.jpg",
+        "caption": (
+            "🚀 <b>GANHOS EXPLOSIVOS HOJE!</b>\n\n"
+            "💥 Multiplicadores de até <b>x20.000</b>\n"
+            "🔥 Os slots mais quentes estão pagando agora\n\n"
+            "💰 Sua vez de ganhar!\n"
+            "🎁 + Bônus até 8250 BRL + 150 FS"
+        ),
+        "button": "🎮 Jogar agora",
+    },
+    {
+        "image": "images/promo/post_vip.jpg",
+        "caption": (
+            "👑 <b>ACESSO VIP FORTUNA REX</b>\n\n"
+            "Os melhores slots + bônus exclusivos\n"
+            "💎 Tratamento VIP para nossos jogadores\n\n"
+            "🎁 Bônus de boas-vindas: <b>" + BONUS_TEXT_SHORT + "</b>\n"
+            "💚 Saque via Pix"
+        ),
+        "button": "👑 Entrar agora",
+    },
+]
+
+def promo_kb() -> InlineKeyboardMarkup:
+    # Прямой кликлинк A360 без зоны (общий трафик группы)
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🎁 Pegar bônus (até 8250 BRL + 150 FS)", url=A360_BASE)],
+    ])
+
+async def send_promo_post(bot: Bot, chat_id: str | int, index: int):
+    """Отправляет промо-баннер по индексу (с ротацией по кругу)."""
+    promo = PROMO_POSTS[index % len(PROMO_POSTS)]
+    photo = resolve_photo(promo["image"])
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text=promo["button"], url=A360_BASE)],
+    ])
+    try:
+        if photo:
+            await bot.send_photo(chat_id=chat_id, photo=photo, caption=promo["caption"],
+                                 reply_markup=kb, parse_mode="HTML")
+        else:
+            await bot.send_message(chat_id=chat_id, text=promo["caption"],
+                                   reply_markup=kb, parse_mode="HTML")
+        log.info(f"Promo enviado para {chat_id}: {promo['image']}")
+    except Exception as e:
+        log.error(f"Erro ao enviar promo: {e}")
+
 # ── Авторассылка ──────────────────────────────────────────────────────────────
 
 async def daily_scheduler(bot: Bot):
@@ -293,14 +367,37 @@ async def daily_scheduler(bot: Bot):
         log.info(f"Próximo envio em {wait_seconds/3600:.1f} horas")
         await asyncio.sleep(wait_seconds)
 
-        if CHANNEL_ID:
+        if not CHANNEL_ID:
+            log.warning("CHANNEL_ID não configurado — post diário não enviado")
+            continue
+
+        # Чередуем: чётный день → слот дня, нечётный → промо-баннер (ротация по кругу)
+        daily = load_daily()
+        counter = int(daily.get("post_counter", 0))
+        if counter % 2 == 0:
             await send_daily_slot(bot, CHANNEL_ID)
         else:
-            log.warning("CHANNEL_ID não configurado — slot do dia não enviado")
+            promo_index = int(daily.get("promo_index", 0))
+            await send_promo_post(bot, CHANNEL_ID, promo_index)
+            daily["promo_index"] = (promo_index + 1) % len(PROMO_POSTS)
+        daily["post_counter"] = counter + 1
+        save_daily(daily)
 
 # ── Хэндлеры ─────────────────────────────────────────────────────────────────
 
 dp = Dispatcher(storage=MemoryStorage())
+
+async def send_with_banner(message, banner_name: str, text: str, kb):
+    """Шлёт баннер+подпись, если файл есть; иначе просто текст. Никогда не падает."""
+    banner = resolve_photo(f"images/{banner_name}")
+    if banner:
+        try:
+            await message.answer_photo(photo=banner, caption=text, reply_markup=kb, parse_mode="HTML")
+            return
+        except Exception as e:
+            log.warning(f"Falha ao enviar banner {banner_name}: {e}")
+    await message.answer(text, reply_markup=kb, parse_mode="HTML")
+
 
 @dp.message(Command("start"))
 async def cmd_start(msg: Message, command: CommandObject):
@@ -337,11 +434,12 @@ async def cmd_start(msg: Message, command: CommandObject):
 
 @dp.callback_query(F.data == "menu_new")
 async def cb_menu_new(cb: CallbackQuery):
-    await cb.message.answer(
-        "🎰 <b>Fortuna Rex — Catálogo</b>\n\n👇 Escolha uma categoria:",
-        reply_markup=categories_kb(),
-        parse_mode="HTML"
+    text = (
+        "🎰 <b>Fortuna Rex — Catálogo</b>\n\n"
+        "🔥 Os slots mais quentes com bônus até <b>" + BONUS_TEXT_SHORT + "</b>\n\n"
+        "👇 Escolha uma categoria e comece a ganhar:"
     )
+    await send_with_banner(cb.message, "banner_catalogo.jpg", text, categories_kb())
     await cb.answer()
 
 @dp.callback_query(F.data == "daily")
@@ -389,8 +487,11 @@ async def cb_category(cb: CallbackQuery):
     if not slots:
         await cb.answer("Nenhum slot nesta categoria", show_alert=True)
         return
-    text = f"📂 <b>{category}</b>\n🎮 {len(slots)} jogos disponíveis\n\n👇 Escolha um jogo:"
-    await cb.message.answer(text, reply_markup=slots_kb(category, page), parse_mode="HTML")
+    text = f"📂 <b>{category}</b>\n🎮 {len(slots)} jogos disponíveis\n🎁 Bônus até <b>{BONUS_TEXT_SHORT}</b>\n\n👇 Escolha um jogo:"
+    if page == 0:
+        await send_with_banner(cb.message, "banner_catalogo.jpg", text, slots_kb(category, page))
+    else:
+        await cb.message.answer(text, reply_markup=slots_kb(category, page), parse_mode="HTML")
     await cb.answer()
 
 @dp.callback_query(F.data.startswith("slot:"))
@@ -423,7 +524,13 @@ async def cb_slot(cb: CallbackQuery):
 @dp.callback_query(F.data == "search")
 async def cb_search_prompt(cb: CallbackQuery, state: FSMContext):
     await state.set_state(SearchSlot.waiting)
-    await cb.message.answer("🔍 Digite o nome do slot que procura:")
+    text = (
+        "🔍 <b>Buscar jogo</b>\n\n"
+        "Digite o nome do slot que procura.\n"
+        "Ex: <i>Gates</i>, <i>Tiger</i>, <i>Money</i>...\n\n"
+        f"🎁 Todos com bônus até <b>{BONUS_TEXT_SHORT}</b>"
+    )
+    await send_with_banner(cb.message, "banner_buscar.jpg", text, None)
     await cb.answer()
 
 @dp.message(StateFilter(SearchSlot.waiting))
@@ -481,7 +588,9 @@ async def cb_daily_set(cb: CallbackQuery):
     if not slot:
         await cb.answer("Slot não encontrado", show_alert=True)
         return
-    save_daily({"slot_id": slot_id, "updated": datetime.now().isoformat()})
+    daily = load_daily()
+    daily.update({"slot_id": slot_id, "updated": datetime.now().isoformat()})
+    save_daily(daily)
     await cb.message.edit_text(f"✅ Slot do dia definido: <b>{slot['name']}</b>", parse_mode="HTML")
     await cb.answer()
 
@@ -495,6 +604,23 @@ async def cmd_senddaily(msg: Message):
         await msg.answer("✅ Slot do dia enviado para o canal!")
     else:
         await msg.answer("⚠️ CHANNEL_ID não configurado — enviado aqui como teste")
+
+@dp.message(Command("sendpromo"))
+async def cmd_sendpromo(msg: Message):
+    """Отправить промо-баннер сейчас (тест). Можно указать номер: /sendpromo 2"""
+    if not is_admin(msg.from_user.id):
+        return
+    parts = (msg.text or "").split()
+    idx = 0
+    if len(parts) > 1 and parts[1].isdigit():
+        idx = int(parts[1])
+    target = CHANNEL_ID if CHANNEL_ID else msg.chat.id
+    await send_promo_post(msg.bot, target, idx)
+    total = len(PROMO_POSTS)
+    if CHANNEL_ID:
+        await msg.answer(f"✅ Promo #{idx % total} enviado para o canal! (total: {total})")
+    else:
+        await msg.answer(f"⚠️ CHANNEL_ID não configurado — promo #{idx % total} enviado aqui como teste")
 
 @dp.message(Command("stats"))
 async def cmd_stats(msg: Message):
@@ -661,6 +787,7 @@ async def cmd_help(msg: Message):
         "🛠 <b>Comandos de admin:</b>\n\n"
         "/setdaily — выбрать слот дня\n"
         "/senddaily — отправить слот дня сейчас (тест)\n"
+        "/sendpromo [N] — отправить промо-баннер #N сейчас (тест)\n"
         "/stats — статистика кликов\n"
         "/zones — статистика по зонам (sub_id1)\n"
         "/addslot — добавить слот\n"
