@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from urllib.parse import quote
 
 import pytz
+import aiohttp
 from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher, F
@@ -43,6 +44,10 @@ BONUS_TEXT_SHORT = "até 8250 BRL + 150 FS"
 # Ссылки на наши ресурсы (кнопки в приветствии и постах)
 GROUP_LINK = os.getenv("GROUP_LINK", "https://t.me/fortunarex_slots")
 BOT_LINK = os.getenv("BOT_LINK", "https://t.me/FortunaRex_bot")
+
+# URL веб-приложения Google Apps Script (реал-тайм лог событий в таблицу).
+# Пусто = логирование в Sheets выключено (бот работает как обычно).
+SHEETS_URL = os.getenv("SHEETS_URL", "https://script.google.com/macros/s/AKfycbzW41uAotBjrZ1Z23oSE-oLB3wD3jE5CGClLcgPTl97OWkKrKQF5xf5GoxB2n4fsmqPYw/exec")
 
 BASE_DIR = Path(__file__).parent
 SLOTS_FILE = BASE_DIR / "slots.json"
@@ -176,6 +181,32 @@ def get_user_tags(user_id: int) -> dict:
 
 def get_user_zone(user_id: int) -> str:
     return get_user_tags(user_id)["zone"]
+
+# ── Реал-тайм лог событий в Google Sheets ─────────────────────────────────────
+
+async def log_event(event: str, user_id: int, name: str = "", slot: str = ""):
+    """
+    Шлёт событие в Google Sheets (Apps Script). Не блокирует бота:
+    если SHEETS_URL пуст или запрос упал — просто пропускаем.
+    """
+    if not SHEETS_URL:
+        return
+    t = get_user_tags(user_id)
+    payload = {
+        "event": event,
+        "user_id": str(user_id),
+        "name": name or "",
+        "zone": t["zone"],
+        "banner": t["banner"],
+        "campaign": t["campaign"],
+        "slot": slot or "",
+    }
+    try:
+        timeout = aiohttp.ClientTimeout(total=5)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            await session.post(SHEETS_URL, json=payload)
+    except Exception as e:
+        log.warning(f"Falha ao logar evento no Sheets: {e}")
 
 # ── Аудитория для рассылок ────────────────────────────────────────────────────
 
@@ -536,6 +567,9 @@ async def cmd_start(msg: Message, command: CommandObject):
     register_user(msg.from_user.id, name=msg.from_user.first_name or "",
                   zone=get_user_zone(msg.from_user.id))
 
+    # Реал-тайм лог в Google Sheets
+    await log_event("start", msg.from_user.id, name=msg.from_user.first_name or "")
+
     # Ссылка оффера со всеми метками (для главной CTA-кнопки бонуса)
     t = get_user_tags(msg.from_user.id)
     offer = build_offer_url(A360_BASE, zone=t["zone"], click_id=str(msg.from_user.id),
@@ -637,6 +671,8 @@ async def cb_slot(cb: CallbackQuery):
         await cb.answer("Slot não encontrado", show_alert=True)
         return
     bump_stat(slot_id)
+    await log_event("slot_click", cb.from_user.id,
+                    name=cb.from_user.first_name or "", slot=slot["name"])
     caption = (
         f"🎰 <b>{slot['name']}</b>\n"
         f"📂 {slot['category']}\n\n"
