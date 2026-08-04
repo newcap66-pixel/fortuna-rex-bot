@@ -77,22 +77,30 @@ def clean(value: str) -> str:
     return v.strip()
 
 
-def build_offer_url(base_url: str, zone: str = "", click_id: str = "") -> str:
+def build_offer_url(base_url: str, zone: str = "", click_id: str = "",
+                    banner: str = "", campaign: str = "") -> str:
     """
     Достраивает клик-линк A360 метками:
-      sub_id1      = зона (из deep-link ?start=ZONE_ID)
-      aff_click_id = click_id (используем telegram user_id как суррогат)
-    Обе метки прогоняются через clean(). Пустые не добавляются.
-    Если у слота уже свой полный URL — просто дополняем недостающими метками.
+      aff_click_id = click_id (telegram user_id как суррогат)
+      sub_id1      = зона     (${ZONE_ID})
+      sub_id2      = баннер   (${BANNER_ID}) — какой креатив дал клик
+      sub_id3      = кампания (${CAMPAIGN_ID})
+    Все метки прогоняются через clean(). Пустые не добавляются.
     """
     zone = clean(zone)
     click_id = clean(click_id)
+    banner = clean(banner)
+    campaign = clean(campaign)
 
     params = []
     if "aff_click_id=" not in base_url and click_id:
         params.append(f"aff_click_id={quote(click_id)}")
     if "sub_id1=" not in base_url and zone:
         params.append(f"sub_id1={quote(zone)}")
+    if "sub_id2=" not in base_url and banner:
+        params.append(f"sub_id2={quote(banner)}")
+    if "sub_id3=" not in base_url and campaign:
+        params.append(f"sub_id3={quote(campaign)}")
 
     if not params:
         return base_url
@@ -138,17 +146,36 @@ def load_zones() -> dict:
 def save_zones(data: dict):
     ZONES_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
-def set_user_zone(user_id: int, zone: str):
-    """Запоминаем зону, с которой пришёл юзер (для подстановки в sub_id1)."""
-    zone = clean(zone)
-    if not zone:
+def set_user_tags(user_id: int, start_arg: str):
+    """
+    Парсит deep-link ?start=ZONE-BANNER-CAMPAIGN и сохраняет метки по юзеру.
+    Разделитель — дефис. Любая часть может отсутствовать.
+    Пример: 10280518-26789140-11383020 → zone/banner/campaign.
+    """
+    if not start_arg:
+        return
+    parts = clean(start_arg).split("-")
+    zone = parts[0] if len(parts) > 0 else ""
+    banner = parts[1] if len(parts) > 1 else ""
+    campaign = parts[2] if len(parts) > 2 else ""
+    if not (zone or banner or campaign):
         return
     zones = load_zones()
-    zones[str(user_id)] = zone
+    zones[str(user_id)] = {"zone": zone, "banner": banner, "campaign": campaign}
     save_zones(zones)
 
+def get_user_tags(user_id: int) -> dict:
+    """Возвращает {zone, banner, campaign}. Совместимо со старым форматом (строка = зона)."""
+    val = load_zones().get(str(user_id))
+    if val is None:
+        return {"zone": "", "banner": "", "campaign": ""}
+    if isinstance(val, str):  # старый формат: хранилась просто зона
+        return {"zone": val, "banner": "", "campaign": ""}
+    return {"zone": val.get("zone", ""), "banner": val.get("banner", ""),
+            "campaign": val.get("campaign", "")}
+
 def get_user_zone(user_id: int) -> str:
-    return load_zones().get(str(user_id), "")
+    return get_user_tags(user_id)["zone"]
 
 # ── Аудитория для рассылок ────────────────────────────────────────────────────
 
@@ -223,9 +250,11 @@ def resolve_photo(image_value: str):
     return image_value
 
 def offer_url_for(slot: dict, user_id: int) -> str:
-    """Готовая ссылка оффера для конкретного юзера: база слота + зона юзера + user_id."""
+    """Готовая ссылка оффера для юзера: база слота + зона/баннер/кампания + user_id."""
     base = slot.get("url") or A360_BASE
-    return build_offer_url(base, zone=get_user_zone(user_id), click_id=str(user_id))
+    t = get_user_tags(user_id)
+    return build_offer_url(base, zone=t["zone"], click_id=str(user_id),
+                           banner=t["banner"], campaign=t["campaign"])
 
 # ── FSM ───────────────────────────────────────────────────────────────────────
 
@@ -497,16 +526,20 @@ async def send_with_banner(message, banner_name: str, text: str, kb):
 
 @dp.message(Command("start"))
 async def cmd_start(msg: Message, command: CommandObject):
-    # Ловим deep-link: t.me/FortunaRex_bot?start=ZONE_ID → запоминаем зону
+    # Ловим deep-link: t.me/FortunaRex_bot?start=ZONE-BANNER-CAMPAIGN → запоминаем метки
     if command.args:
-        set_user_zone(msg.from_user.id, command.args)
-        log.info(f"Zona capturada p/ user {msg.from_user.id}: {clean(command.args)}")
+        set_user_tags(msg.from_user.id, command.args)
+        t0 = get_user_tags(msg.from_user.id)
+        log.info(f"Tags user {msg.from_user.id}: zone={t0['zone']} banner={t0['banner']} camp={t0['campaign']}")
 
     # Сохраняем юзера в аудиторию для будущих рассылок
-    register_user(msg.from_user.id, name=msg.from_user.first_name or "", zone=command.args or "")
+    register_user(msg.from_user.id, name=msg.from_user.first_name or "",
+                  zone=get_user_zone(msg.from_user.id))
 
-    # Ссылка оффера с зоной юзера (для главной CTA-кнопки бонуса)
-    offer = build_offer_url(A360_BASE, zone=get_user_zone(msg.from_user.id), click_id=str(msg.from_user.id))
+    # Ссылка оффера со всеми метками (для главной CTA-кнопки бонуса)
+    t = get_user_tags(msg.from_user.id)
+    offer = build_offer_url(A360_BASE, zone=t["zone"], click_id=str(msg.from_user.id),
+                            banner=t["banner"], campaign=t["campaign"])
 
     text = (
         "🎰 <b>Bem-vindo ao FORTUNA REX!</b>\n"
@@ -558,7 +591,9 @@ async def cb_daily(cb: CallbackQuery):
 
 @dp.callback_query(F.data == "bonus")
 async def cb_bonus(cb: CallbackQuery):
-    url = build_offer_url(A360_BASE, zone=get_user_zone(cb.from_user.id), click_id=str(cb.from_user.id))
+    t = get_user_tags(cb.from_user.id)
+    url = build_offer_url(A360_BASE, zone=t["zone"], click_id=str(cb.from_user.id),
+                          banner=t["banner"], campaign=t["campaign"])
     text = (
         f"🎁 <b>Pacote de Boas-vindas — {BONUS_TEXT_SHORT}</b>\n\n"
         "✅ Bônus no primeiro depósito\n"
