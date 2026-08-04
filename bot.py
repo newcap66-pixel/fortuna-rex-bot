@@ -49,6 +49,7 @@ SLOTS_FILE = BASE_DIR / "slots.json"
 STATS_FILE = BASE_DIR / "stats.json"
 DAILY_FILE = BASE_DIR / "daily.json"    # хранит текущий слот дня
 ZONES_FILE = BASE_DIR / "zones.json"    # хранит зону по каждому Telegram user_id
+USERS_FILE = BASE_DIR / "users.json"    # аудитория для рассылок: user_id → {zone, name, first_seen}
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -149,6 +150,43 @@ def set_user_zone(user_id: int, zone: str):
 def get_user_zone(user_id: int) -> str:
     return load_zones().get(str(user_id), "")
 
+# ── Аудитория для рассылок ────────────────────────────────────────────────────
+
+def load_users() -> dict:
+    if USERS_FILE.exists():
+        return json.loads(USERS_FILE.read_text(encoding="utf-8"))
+    return {}
+
+def save_users(data: dict):
+    USERS_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+def register_user(user_id: int, name: str = "", zone: str = ""):
+    """Сохраняем юзера в аудиторию при /start. Не перезаписываем first_seen/зону, если уже есть."""
+    users = load_users()
+    uid = str(user_id)
+    if uid not in users:
+        users[uid] = {
+            "name": name or "",
+            "zone": clean(zone),
+            "first_seen": datetime.now().isoformat(),
+            "blocked": False,
+        }
+    else:
+        # обновим имя и зону, если пришли новые (напр. повторный /start с зоной)
+        if name:
+            users[uid]["name"] = name
+        if clean(zone):
+            users[uid]["zone"] = clean(zone)
+    save_users(users)
+
+def mark_user_blocked(user_id: int):
+    """Помечаем, что юзер заблокировал бота (чтобы не слать ему при рассылке)."""
+    users = load_users()
+    uid = str(user_id)
+    if uid in users:
+        users[uid]["blocked"] = True
+        save_users(users)
+
 def get_daily_slot() -> dict | None:
     daily = load_daily()
     slot_id = daily.get("slot_id")
@@ -201,6 +239,9 @@ class SetImage(StatesGroup):
     waiting  = State()
 
 class SearchSlot(StatesGroup):
+    waiting  = State()
+
+class Broadcast(StatesGroup):
     waiting  = State()
 
 # ── Клавиатуры ────────────────────────────────────────────────────────────────
@@ -461,6 +502,9 @@ async def cmd_start(msg: Message, command: CommandObject):
         set_user_zone(msg.from_user.id, command.args)
         log.info(f"Zona capturada p/ user {msg.from_user.id}: {clean(command.args)}")
 
+    # Сохраняем юзера в аудиторию для будущих рассылок
+    register_user(msg.from_user.id, name=msg.from_user.first_name or "", zone=command.args or "")
+
     # Ссылка оффера с зоной юзера (для главной CTA-кнопки бонуса)
     offer = build_offer_url(A360_BASE, zone=get_user_zone(msg.from_user.id), click_id=str(msg.from_user.id))
 
@@ -712,6 +756,90 @@ async def cmd_zones(msg: Message):
     lines.append(f"\n👥 Total: {len(zones)} usuário(s)")
     await msg.answer("\n".join(lines), parse_mode="HTML")
 
+# ── Рассылка по аудитории бота ────────────────────────────────────────────────
+
+@dp.message(Command("audience"))
+async def cmd_audience(msg: Message):
+    """Сводка по собранной аудитории (для рассылок)."""
+    if not is_admin(msg.from_user.id):
+        return
+    users = load_users()
+    total = len(users)
+    blocked = sum(1 for u in users.values() if u.get("blocked"))
+    active = total - blocked
+    await msg.answer(
+        f"👥 <b>Audiência do bot</b>\n\n"
+        f"Total: <b>{total}</b>\n"
+        f"Ativos (podem receber): <b>{active}</b>\n"
+        f"Bloquearam o bot: {blocked}\n\n"
+        f"Use /broadcast para enviar mensagem a todos os ativos.",
+        parse_mode="HTML"
+    )
+
+@dp.message(Command("broadcast"))
+async def cmd_broadcast(msg: Message, state: FSMContext):
+    """Запуск рассылки: следующим сообщением админ шлёт текст/фото — оно уйдёт всем."""
+    if not is_admin(msg.from_user.id):
+        return
+    users = load_users()
+    active = sum(1 for u in users.values() if not u.get("blocked"))
+    if active == 0:
+        await msg.answer("👥 Ainda sem audiência para enviar.")
+        return
+    await state.set_state(Broadcast.waiting)
+    await msg.answer(
+        f"📢 <b>Broadcast</b> — envie agora a mensagem (texto ou foto com legenda).\n\n"
+        f"Ela será enviada para <b>{active}</b> usuário(s) ativos.\n"
+        f"Para cancelar, envie /cancel.",
+        parse_mode="HTML"
+    )
+
+@dp.message(Command("cancel"), StateFilter(Broadcast.waiting))
+async def cmd_cancel_broadcast(msg: Message, state: FSMContext):
+    await state.clear()
+    await msg.answer("❌ Broadcast cancelado.")
+
+@dp.message(StateFilter(Broadcast.waiting))
+async def do_broadcast(msg: Message, state: FSMContext):
+    if not is_admin(msg.from_user.id):
+        await state.clear()
+        return
+    await state.clear()
+    users = load_users()
+    targets = [int(uid) for uid, u in users.items() if not u.get("blocked")]
+
+    # Что рассылаем: фото с подписью или текст
+    photo_id = msg.photo[-1].file_id if msg.photo else None
+    content = msg.caption if msg.photo else msg.text
+    if not content and not photo_id:
+        await msg.answer("❌ Mensagem vazia — broadcast cancelado.")
+        return
+
+    await msg.answer(f"📤 Enviando para {len(targets)} usuário(s)...")
+    sent = 0
+    failed = 0
+    for uid in targets:
+        try:
+            if photo_id:
+                await msg.bot.send_photo(chat_id=uid, photo=photo_id,
+                                         caption=content or "", parse_mode="HTML")
+            else:
+                await msg.bot.send_message(chat_id=uid, text=content, parse_mode="HTML")
+            sent += 1
+        except Exception as e:
+            # юзер заблокировал бота или недоступен — помечаем, чтобы не слать впредь
+            failed += 1
+            mark_user_blocked(uid)
+        # пауза от флуд-лимита Telegram (~20 msg/сек — берём безопасно)
+        await asyncio.sleep(0.1)
+
+    await msg.answer(
+        f"✅ <b>Broadcast concluído</b>\n\n"
+        f"Enviados: <b>{sent}</b>\n"
+        f"Falharam/bloquearam: {failed}",
+        parse_mode="HTML"
+    )
+
 @dp.message(Command("addslot"))
 async def cmd_addslot(msg: Message, state: FSMContext):
     if not is_admin(msg.from_user.id):
@@ -845,6 +973,8 @@ async def cmd_help(msg: Message):
         "/sendpromo [N] — отправить промо-баннер #N сейчас (тест)\n"
         "/stats — статистика кликов\n"
         "/zones — статистика по зонам (sub_id1)\n"
+        "/audience — размер аудитории для рассылок\n"
+        "/broadcast — рассылка всем, кто зашёл в бота\n"
         "/addslot — добавить слот\n"
         "/removeslot — удалить слот\n"
         "/setimage — обновить картинку слота\n"
