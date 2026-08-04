@@ -1,9 +1,12 @@
 import asyncio
 import json
 import os
+import re
 import logging
 from pathlib import Path
-from datetime import datetime, time as dtime
+from datetime import datetime, timedelta
+from urllib.parse import quote
+
 import pytz
 from dotenv import load_dotenv
 
@@ -12,7 +15,7 @@ from aiogram.types import (
     Message, CallbackQuery, FSInputFile,
     InlineKeyboardMarkup, InlineKeyboardButton
 )
-from aiogram.filters import Command, StateFilter
+from aiogram.filters import Command, CommandObject, StateFilter
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -21,20 +24,76 @@ load_dotenv()
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_IDS = [int(x) for x in os.getenv("ADMIN_IDS", "").split(",") if x.strip()]
-CHANNEL_ID = os.getenv("CHANNEL_ID", "")        # ID канала/группы для рассылки, например -1001234567890
-DAILY_HOUR = int(os.getenv("DAILY_HOUR", "12"))  # Час рассылки (UTC)
+CHANNEL_ID = os.getenv("CHANNEL_ID", "")          # ID канала/группы для рассылки, напр. -1001234567890
+DAILY_HOUR = int(os.getenv("DAILY_HOUR", "12"))   # Час рассылки (в TIMEZONE)
 DAILY_MINUTE = int(os.getenv("DAILY_MINUTE", "0"))
 TIMEZONE = os.getenv("TIMEZONE", "America/Sao_Paulo")
+
+# ── Оффер A360 (единый источник правды для всех ссылок) ───────────────────────
+# Базовый клик-линк maglead → A360 #2093. Метки в формате Scaleo:
+#   click_id → aff_click_id, зона → sub_id1  (НЕ sub1/sub2!)
+A360_BASE = os.getenv(
+    "A360_BASE",
+    "https://maglead.buzz/click?o=2093&a=13335&link_id=8717"
+)
+# Пакет приветствия A360 (подтверждён на экране регистрации)
+BONUS_TEXT_SHORT = "até 8250 BRL + 150 FS"
 
 BASE_DIR = Path(__file__).parent
 SLOTS_FILE = BASE_DIR / "slots.json"
 STATS_FILE = BASE_DIR / "stats.json"
-DAILY_FILE = BASE_DIR / "daily.json"  # хранит текущий слот дня
+DAILY_FILE = BASE_DIR / "daily.json"    # хранит текущий слот дня
+ZONES_FILE = BASE_DIR / "zones.json"    # хранит зону по каждому Telegram user_id
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
 
-# ── Данные ────────────────────────────────────────────────────────────────────
+# ── Трекинг: чистка меток и сборка ссылки оффера ──────────────────────────────
+
+def clean(value: str) -> str:
+    """
+    Фикс доллара (как в ленде колеса):
+    - срезает ведущий '$' у значения ($1108... → 1108...)
+    - отсеивает нераскрытые макросы вида ${...} → пустая строка
+    Возвращает безопасную для URL строку.
+    """
+    if not value:
+        return ""
+    v = str(value).strip()
+    # нераскрытый макрос целиком, напр. "${ZONE_ID}" или "${CLICK_ID}"
+    if v.startswith("${") and v.endswith("}"):
+        return ""
+    # ведущий '$' (Propeller иногда прилетает как "$1108...")
+    if v.startswith("$"):
+        v = v[1:]
+    # выкидываем любые оставшиеся ${...} внутри строки
+    v = re.sub(r"\$\{[^}]*\}", "", v)
+    return v.strip()
+
+
+def build_offer_url(base_url: str, zone: str = "", click_id: str = "") -> str:
+    """
+    Достраивает клик-линк A360 метками:
+      sub_id1      = зона (из deep-link ?start=ZONE_ID)
+      aff_click_id = click_id (используем telegram user_id как суррогат)
+    Обе метки прогоняются через clean(). Пустые не добавляются.
+    Если у слота уже свой полный URL — просто дополняем недостающими метками.
+    """
+    zone = clean(zone)
+    click_id = clean(click_id)
+
+    params = []
+    if "aff_click_id=" not in base_url and click_id:
+        params.append(f"aff_click_id={quote(click_id)}")
+    if "sub_id1=" not in base_url and zone:
+        params.append(f"sub_id1={quote(zone)}")
+
+    if not params:
+        return base_url
+    sep = "&" if "?" in base_url else "?"
+    return base_url + sep + "&".join(params)
+
+# ── Данные: слоты / статистика / слот дня / зоны ──────────────────────────────
 
 def load_slots() -> list[dict]:
     if SLOTS_FILE.exists():
@@ -65,11 +124,30 @@ def load_daily() -> dict:
 def save_daily(data: dict):
     DAILY_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
+def load_zones() -> dict:
+    if ZONES_FILE.exists():
+        return json.loads(ZONES_FILE.read_text(encoding="utf-8"))
+    return {}
+
+def save_zones(data: dict):
+    ZONES_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+def set_user_zone(user_id: int, zone: str):
+    """Запоминаем зону, с которой пришёл юзер (для подстановки в sub_id1)."""
+    zone = clean(zone)
+    if not zone:
+        return
+    zones = load_zones()
+    zones[str(user_id)] = zone
+    save_zones(zones)
+
+def get_user_zone(user_id: int) -> str:
+    return load_zones().get(str(user_id), "")
+
 def get_daily_slot() -> dict | None:
     daily = load_daily()
     slot_id = daily.get("slot_id")
     if not slot_id:
-        # Если не задан — берём первый слот из Mais Populares
         slots = load_slots()
         popular = [s for s in slots if "Populares" in s.get("category", "")]
         return popular[0] if popular else (slots[0] if slots else None)
@@ -83,6 +161,11 @@ def resolve_photo(image_value: str):
     if local_path.exists() and local_path.is_file():
         return FSInputFile(local_path)
     return image_value
+
+def offer_url_for(slot: dict, user_id: int) -> str:
+    """Готовая ссылка оффера для конкретного юзера: база слота + зона юзера + user_id."""
+    base = slot.get("url") or A360_BASE
+    return build_offer_url(base, zone=get_user_zone(user_id), click_id=str(user_id))
 
 # ── FSM ───────────────────────────────────────────────────────────────────────
 
@@ -113,7 +196,7 @@ def categories_kb() -> InlineKeyboardMarkup:
     cats = ordered_categories({s["category"] for s in slots})
     buttons = [[InlineKeyboardButton(text=c, callback_data=f"cat:{c}:0")] for c in cats]
     buttons.append([InlineKeyboardButton(text="🔥 Slot do Dia", callback_data="daily")])
-    buttons.append([InlineKeyboardButton(text="🎁 Bônus de Boas-vindas", callback_data="bonus")])
+    buttons.append([InlineKeyboardButton(text=f"🎁 Bônus {BONUS_TEXT_SHORT}", callback_data="bonus")])
     buttons.append([InlineKeyboardButton(text="🔍 Buscar jogo", callback_data="search")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -141,16 +224,20 @@ def slots_kb(category: str, page: int) -> InlineKeyboardMarkup:
     buttons.append([InlineKeyboardButton(text="🏠 Menu principal", callback_data="menu_new")])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-def slot_kb(slot: dict) -> InlineKeyboardMarkup:
+def slot_kb(slot: dict, user_id: int) -> InlineKeyboardMarkup:
+    url = offer_url_for(slot, user_id)
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎮 Jogar agora!", url=slot["url"])],
+        [InlineKeyboardButton(text=f"🎮 Jogar {slot['name']} agora!", url=url)],
+        [InlineKeyboardButton(text=f"🎁 Bônus {BONUS_TEXT_SHORT}", url=url)],
         [InlineKeyboardButton(text="◀️ Voltar", callback_data=f"cat:{slot['category']}:0")],
         [InlineKeyboardButton(text="🏠 Menu principal", callback_data="menu_new")],
     ])
 
-def daily_slot_kb(slot: dict) -> InlineKeyboardMarkup:
+def daily_slot_kb(slot: dict, user_id: int) -> InlineKeyboardMarkup:
+    url = offer_url_for(slot, user_id)
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎮 Jogar agora!", url=slot["url"])],
+        [InlineKeyboardButton(text="🎮 Jogar agora!", url=url)],
+        [InlineKeyboardButton(text=f"🎁 Resgatar bônus ({BONUS_TEXT_SHORT})", url=url)],
         [InlineKeyboardButton(text="🏠 Menu principal", callback_data="menu_new")],
     ])
 
@@ -174,22 +261,15 @@ async def send_daily_slot(bot: Bot, chat_id: str | int):
         return
     caption = daily_caption(slot)
     photo = resolve_photo(slot.get("image"))
+    # В канал зону юзера не знаем → ссылка идёт без sub_id1 (общий трафик канала)
+    kb = daily_slot_kb(slot, user_id=0)
     try:
         if photo:
-            await bot.send_photo(
-                chat_id=chat_id,
-                photo=photo,
-                caption=caption,
-                reply_markup=daily_slot_kb(slot),
-                parse_mode="HTML"
-            )
+            await bot.send_photo(chat_id=chat_id, photo=photo, caption=caption,
+                                 reply_markup=kb, parse_mode="HTML")
         else:
-            await bot.send_message(
-                chat_id=chat_id,
-                text=caption,
-                reply_markup=daily_slot_kb(slot),
-                parse_mode="HTML"
-            )
+            await bot.send_message(chat_id=chat_id, text=caption,
+                                   reply_markup=kb, parse_mode="HTML")
         log.info(f"Slot do dia enviado para {chat_id}: {slot['name']}")
     except Exception as e:
         log.error(f"Erro ao enviar slot do dia: {e}")
@@ -203,8 +283,8 @@ async def daily_scheduler(bot: Bot):
         now = datetime.now(tz)
         target = now.replace(hour=DAILY_HOUR, minute=DAILY_MINUTE, second=0, microsecond=0)
         if now >= target:
-            # Уже прошло сегодня — ждём до завтра
-            target = target.replace(day=target.day + 1)
+            # уже прошло сегодня — ждём до завтра (timedelta, чтобы не падать 28/30/31 числа)
+            target = target + timedelta(days=1)
         wait_seconds = (target - now).total_seconds()
         log.info(f"Próximo envio em {wait_seconds/3600:.1f} horas")
         await asyncio.sleep(wait_seconds)
@@ -219,11 +299,16 @@ async def daily_scheduler(bot: Bot):
 dp = Dispatcher(storage=MemoryStorage())
 
 @dp.message(Command("start"))
-async def cmd_start(msg: Message):
+async def cmd_start(msg: Message, command: CommandObject):
+    # Ловим deep-link: t.me/FortunaRex_bot?start=ZONE_ID → запоминаем зону
+    if command.args:
+        set_user_zone(msg.from_user.id, command.args)
+        log.info(f"Zona capturada p/ user {msg.from_user.id}: {clean(command.args)}")
+
     text = (
-        "🎰 <b>Bem-vindo ao catálogo Leon Casino!</b>\n\n"
+        "🎰 <b>Bem-vindo ao Fortuna Rex!</b>\n\n"
         "🔥 Os melhores slots com os maiores multiplicadores\n"
-        "💰 Bônus de até R$9.500 para novos jogadores\n\n"
+        f"💰 Bônus de boas-vindas: <b>{BONUS_TEXT_SHORT}</b>\n\n"
         "👇 Escolha uma categoria:"
     )
     banner = resolve_photo("images/banner_start.jpg")
@@ -235,7 +320,7 @@ async def cmd_start(msg: Message):
 @dp.callback_query(F.data == "menu_new")
 async def cb_menu_new(cb: CallbackQuery):
     await cb.message.answer(
-        "🎰 <b>Catálogo Leon Casino</b>\n\n👇 Escolha uma categoria:",
+        "🎰 <b>Fortuna Rex — Catálogo</b>\n\n👇 Escolha uma categoria:",
         reply_markup=categories_kb(),
         parse_mode="HTML"
     )
@@ -249,30 +334,26 @@ async def cb_daily(cb: CallbackQuery):
         return
     caption = daily_caption(slot)
     photo = resolve_photo(slot.get("image"))
+    kb = daily_slot_kb(slot, cb.from_user.id)
     if photo:
-        await cb.message.answer_photo(
-            photo=photo,
-            caption=caption,
-            reply_markup=daily_slot_kb(slot),
-            parse_mode="HTML"
-        )
+        await cb.message.answer_photo(photo=photo, caption=caption, reply_markup=kb, parse_mode="HTML")
     else:
-        await cb.message.answer(caption, reply_markup=daily_slot_kb(slot), parse_mode="HTML")
+        await cb.message.answer(caption, reply_markup=kb, parse_mode="HTML")
     await cb.answer()
 
 @dp.callback_query(F.data == "bonus")
 async def cb_bonus(cb: CallbackQuery):
+    url = build_offer_url(A360_BASE, zone=get_user_zone(cb.from_user.id), click_id=str(cb.from_user.id))
     text = (
-        "🎁 <b>Pacote de Boas-vindas — até R$9.500</b>\n\n"
-        "1️⃣ <b>1º depósito:</b> 100% até R$2.500 + 30 giros grátis (Fortune Rabbit)\n"
-        "2️⃣ <b>2º depósito:</b> 150% até R$3.000 + 40 giros grátis (Fortune Dragon)\n"
-        "3️⃣ <b>3º depósito:</b> 200% até R$4.000 + 50 giros grátis (Fortune Tiger)\n\n"
-        "💰 <b>Total: até R$9.500 + 120 Rodadas Grátis</b>\n\n"
-        "🏷 Código promocional: <code>KYJKQOH</code>\n"
-        "📅 Válido até 31/12/2027"
+        f"🎁 <b>Pacote de Boas-vindas — {BONUS_TEXT_SHORT}</b>\n\n"
+        "✅ Bônus no primeiro depósito\n"
+        "✅ 150 rodadas grátis (FS)\n"
+        "✅ Cassino + A360 Exclusives\n\n"
+        "💰 Cadastro rápido em 1 clique — país Brasil, moeda BRL\n"
+        "⚡ Saque via Pix"
     )
     kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🎮 Resgatar bônus agora", url="https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345394")],
+        [InlineKeyboardButton(text="🎮 Resgatar bônus agora", url=url)],
         [InlineKeyboardButton(text="🏠 Menu principal", callback_data="menu_new")],
     ])
     banner = resolve_photo("images/banner_bonus.jpg")
@@ -306,17 +387,19 @@ async def cb_slot(cb: CallbackQuery):
     caption = (
         f"🎰 <b>{slot['name']}</b>\n"
         f"📂 {slot['category']}\n\n"
-        f"{slot.get('description', '')}"
+        f"{slot.get('description', '')}\n\n"
+        f"🎁 Bônus de boas-vindas: <b>{BONUS_TEXT_SHORT}</b>"
     )
+    kb = slot_kb(slot, cb.from_user.id)
     photo = resolve_photo(slot.get("image"))
     if not photo:
-        await cb.message.answer(caption, reply_markup=slot_kb(slot), parse_mode="HTML")
+        await cb.message.answer(caption, reply_markup=kb, parse_mode="HTML")
     else:
         try:
-            await cb.message.answer_photo(photo=photo, caption=caption, reply_markup=slot_kb(slot), parse_mode="HTML")
+            await cb.message.answer_photo(photo=photo, caption=caption, reply_markup=kb, parse_mode="HTML")
         except Exception as e:
             log.warning(f"Falha ao enviar imagem {slot_id}: {e}")
-            await cb.message.answer(f"⚠️ Imagem não disponível\n\n{caption}", reply_markup=slot_kb(slot), parse_mode="HTML")
+            await cb.message.answer(f"⚠️ Imagem não disponível\n\n{caption}", reply_markup=kb, parse_mode="HTML")
     await cb.answer()
 
 @dp.callback_query(F.data == "search")
@@ -340,7 +423,8 @@ async def handle_search(msg: Message, state: FSMContext):
         return
     buttons = [[InlineKeyboardButton(text=f"🎰 {s['name']}", callback_data=f"slot:{s['id']}")] for s in results[:10]]
     buttons.append([InlineKeyboardButton(text="🏠 Menu principal", callback_data="menu_new")])
-    await msg.answer(f"🔍 Encontrado: <b>{len(results)}</b> jogo(s)", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons), parse_mode="HTML")
+    await msg.answer(f"🔍 Encontrado: <b>{len(results)}</b> jogo(s)",
+                     reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons), parse_mode="HTML")
 
 @dp.callback_query(F.data == "noop")
 async def cb_noop(cb: CallbackQuery):
@@ -353,7 +437,6 @@ def is_admin(user_id: int) -> bool:
 
 @dp.message(Command("setdaily"))
 async def cmd_setdaily(msg: Message):
-    """Выбрать слот дня"""
     if not is_admin(msg.from_user.id):
         return
     slots = load_slots()
@@ -366,11 +449,8 @@ async def cmd_setdaily(msg: Message):
     for s in slots:
         mark = "✅ " if s["id"] == current_id else ""
         buttons.append([InlineKeyboardButton(text=f"{mark}{s['name']}", callback_data=f"daily_set:{s['id']}")])
-    await msg.answer(
-        "🔥 <b>Escolha o Slot do Dia:</b>\n\n✅ = atual",
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons),
-        parse_mode="HTML"
-    )
+    await msg.answer("🔥 <b>Escolha o Slot do Dia:</b>\n\n✅ = atual",
+                     reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons), parse_mode="HTML")
 
 @dp.callback_query(F.data.startswith("daily_set:"))
 async def cb_daily_set(cb: CallbackQuery):
@@ -389,13 +469,12 @@ async def cb_daily_set(cb: CallbackQuery):
 
 @dp.message(Command("senddaily"))
 async def cmd_senddaily(msg: Message):
-    """Отправить слот дня прямо сейчас (тест)"""
     if not is_admin(msg.from_user.id):
         return
     target = CHANNEL_ID if CHANNEL_ID else msg.chat.id
     await send_daily_slot(msg.bot, target)
     if CHANNEL_ID:
-        await msg.answer(f"✅ Slot do dia enviado para o canal!")
+        await msg.answer("✅ Slot do dia enviado para o canal!")
     else:
         await msg.answer("⚠️ CHANNEL_ID não configurado — enviado aqui como teste")
 
@@ -414,6 +493,24 @@ async def cmd_stats(msg: Message):
         count = stats.get(slot["id"], 0)
         bar = "▓" * min(count, 10) + "░" * (10 - min(count, 10))
         lines.append(f"{bar} <b>{slot['name']}</b>: {count} cliques")
+    await msg.answer("\n".join(lines), parse_mode="HTML")
+
+@dp.message(Command("zones"))
+async def cmd_zones(msg: Message):
+    """Сводка по зонам: сколько юзеров пришло с каждой зоны Propeller."""
+    if not is_admin(msg.from_user.id):
+        return
+    zones = load_zones()
+    if not zones:
+        await msg.answer("📊 Ainda sem zonas registradas.")
+        return
+    counts: dict[str, int] = {}
+    for z in zones.values():
+        counts[z] = counts.get(z, 0) + 1
+    lines = ["📊 <b>Usuários por zona (sub_id1):</b>\n"]
+    for zone, cnt in sorted(counts.items(), key=lambda kv: kv[1], reverse=True):
+        lines.append(f"• <code>{zone}</code>: {cnt} usuário(s)")
+    lines.append(f"\n👥 Total: {len(zones)} usuário(s)")
     await msg.answer("\n".join(lines), parse_mode="HTML")
 
 @dp.message(Command("addslot"))
@@ -444,20 +541,33 @@ async def add_image(msg: Message, state: FSMContext):
         image = msg.photo[-1].file_id
         await state.update_data(image=image)
         await state.set_state(AddSlot.url)
-        await msg.answer("✅ Foto salva!\n\nPasso 4/4 — Cole o <b>link de afiliado</b>:", parse_mode="HTML")
+        await msg.answer(
+            "✅ Foto salva!\n\nPasso 4/4 — Cole o <b>link de afiliado</b> "
+            "(ou envie <code>-</code> para usar o link padrão A360):",
+            parse_mode="HTML"
+        )
     else:
         await msg.answer("❌ Envie uma <b>foto</b>:", parse_mode="HTML")
 
 @dp.message(AddSlot.url)
 async def add_url(msg: Message, state: FSMContext):
-    if not msg.text or not msg.text.startswith("http"):
-        await msg.answer("❌ O link deve começar com https://")
+    text = (msg.text or "").strip()
+    if text == "-":
+        url = A360_BASE
+    elif text.startswith("http"):
+        url = text
+    else:
+        await msg.answer("❌ O link deve começar com https:// (ou envie <code>-</code> para o padrão A360)",
+                         parse_mode="HTML")
         return
     data = await state.get_data()
     await state.clear()
     slots = load_slots()
     slot_id = f"slot_{len(slots) + 1}_{data['name'].lower().replace(' ', '_')[:20]}"
-    slots.append({"id": slot_id, "name": data["name"], "category": data["category"], "image": data["image"], "url": msg.text.strip(), "description": ""})
+    slots.append({
+        "id": slot_id, "name": data["name"], "category": data["category"],
+        "image": data["image"], "url": url, "description": ""
+    })
     save_slots(slots)
     await msg.answer(f"✅ Slot <b>{data['name']}</b> adicionado!", parse_mode="HTML")
 
@@ -467,7 +577,8 @@ async def cmd_setimage(msg: Message):
         return
     slots = load_slots()
     buttons = [[InlineKeyboardButton(text=s["name"], callback_data=f"setimg:{s['id']}")] for s in slots]
-    await msg.answer("🖼 Escolha o slot para atualizar a imagem:", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
+    await msg.answer("🖼 Escolha o slot para atualizar a imagem:",
+                     reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
 
 @dp.callback_query(F.data.startswith("setimg:"))
 async def cb_setimg(cb: CallbackQuery, state: FSMContext):
@@ -502,7 +613,8 @@ async def cmd_removeslot(msg: Message):
         return
     slots = load_slots()
     buttons = [[InlineKeyboardButton(text=f"❌ {s['name']}", callback_data=f"remove:{s['id']}")] for s in slots]
-    await msg.answer("Escolha o slot para remover:", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
+    await msg.answer("Escolha o slot para remover:",
+                     reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
 
 @dp.callback_query(F.data.startswith("remove:"))
 async def cb_remove(cb: CallbackQuery):
@@ -532,6 +644,7 @@ async def cmd_help(msg: Message):
         "/setdaily — выбрать слот дня\n"
         "/senddaily — отправить слот дня сейчас (тест)\n"
         "/stats — статистика кликов\n"
+        "/zones — статистика по зонам (sub_id1)\n"
         "/addslot — добавить слот\n"
         "/removeslot — удалить слот\n"
         "/setimage — обновить картинку слота\n"
@@ -550,22 +663,19 @@ async def cmd_invite(msg: Message):
     slot_name = slot["name"] if slot else "Gates of Olympus"
 
     posts = [
-        # Пост 1 — интрига
-        f"🔥 <b>Pост 1 — Интрига</b>\n\n"
+        f"🔥 <b>Пост 1 — Интрига</b>\n\n"
         f"<code>🎰 {slot_name} pagou x500 agora!\n\n"
         f"Canal gratuito com os slots mais quentes do dia 👇\n"
         f"{CHANNEL_LINK}</code>",
 
-        # Пост 2 — бонус
         f"💰 <b>Пост 2 — Бонус</b>\n\n"
-        f"<code>💰 Leon Casino está dando R$9.500 de bônus!\n\n"
-        f"✅ 100% no 1º depósito\n"
-        f"✅ 120 rodadas grátis\n"
-        f"✅ Código: KYJKQOH\n\n"
+        f"<code>💰 Bônus de boas-vindas {BONUS_TEXT_SHORT}!\n\n"
+        f"✅ Bônus no 1º depósito\n"
+        f"✅ 150 rodadas grátis\n"
+        f"✅ Saque via Pix\n\n"
         f"Slots do dia no canal 👇\n"
         f"{CHANNEL_LINK}</code>",
 
-        # Пост 3 — слот дня
         f"🎮 <b>Пост 3 — Слот дня</b>\n\n"
         f"<code>🔥 SLOT DO DIA: {slot_name}\n\n"
         f"📊 RTP alto | Multiplicadores explosivos\n"
@@ -573,7 +683,6 @@ async def cmd_invite(msg: Message):
         f"🎁 + Bônus exclusivo para novos jogadores\n"
         f"{CHANNEL_LINK}</code>",
 
-        # Пост 4 — срочность
         f"⚡ <b>Пост 4 — Срочность</b>\n\n"
         f"<code>⚠️ Hoje é o dia certo para jogar {slot_name}!\n\n"
         f"🔴 Alta volatilidade = grandes prêmios\n"
@@ -596,7 +705,7 @@ async def cmd_invite(msg: Message):
         "• Лучшее время: 19:00–22:00 по Бразилии\n"
         "• Не спамьте в одну группу чаще раза в день\n"
         "• Меняйте посты — не всегда один и тот же\n"
-        "• Группы: ищите 'slots brasil', 'cassino', 'fortune tiger'",
+        "• Группы: ищите 'slots brasil', 'cassino', 'gates of olympus'",
         parse_mode="HTML"
     )
 
@@ -605,11 +714,9 @@ async def cmd_invite(msg: Message):
 @dp.chat_member()
 async def on_new_member(event, bot: Bot):
     """Срабатывает когда кто-то вступает в канал/группу"""
-    # Проверяем что это именно наш канал
     if CHANNEL_ID and str(event.chat.id) != str(CHANNEL_ID):
         return
 
-    # Только новые участники (не боты)
     new_status = event.new_chat_member.status
     old_status = event.old_chat_member.status
     user = event.new_chat_member.user
@@ -617,28 +724,24 @@ async def on_new_member(event, bot: Bot):
     if user.is_bot:
         return
 
-    # Пользователь вступил (был не в канале, стал участником)
     if old_status in ("left", "kicked") and new_status == "member":
         name = user.first_name or "Amigo"
+        # Зона юзера в канале неизвестна → ссылка без sub_id1, click_id = user_id
+        url = build_offer_url(A360_BASE, zone="", click_id=str(user.id))
         text = (
             f"🎰 Bem-vindo, <b>{name}</b>!\n\n"
             f"Aqui você encontra todo dia:\n"
             f"🔥 Slot do dia com os maiores multiplicadores\n"
-            f"💰 Bônus exclusivos Leon Casino\n"
+            f"💰 Bônus de boas-vindas {BONUS_TEXT_SHORT}\n"
             f"📊 Dicas de RTP e volatilidade\n\n"
             f"👇 Acesse o catálogo completo:"
         )
         kb = InlineKeyboardMarkup(inline_keyboard=[
             [InlineKeyboardButton(text="🎮 Ver todos os slots", url=BOT_LINK)],
-            [InlineKeyboardButton(text="🎁 Pegar bônus R$9.500", url="https://track.luxeprofit.pro/click?pid=2137&offer_id=2457&l=1785345394")],
+            [InlineKeyboardButton(text=f"🎁 Pegar bônus ({BONUS_TEXT_SHORT})", url=url)],
         ])
         try:
-            await bot.send_message(
-                chat_id=event.chat.id,
-                text=text,
-                reply_markup=kb,
-                parse_mode="HTML"
-            )
+            await bot.send_message(chat_id=event.chat.id, text=text, reply_markup=kb, parse_mode="HTML")
         except Exception as e:
             log.warning(f"Não foi possível enviar boas-vindas: {e}")
 
@@ -647,9 +750,7 @@ async def on_new_member(event, bot: Bot):
 async def main():
     bot = Bot(token=BOT_TOKEN)
     asyncio.create_task(daily_scheduler(bot))
-    # Включаем отслеживание изменений участников канала
     await dp.start_polling(bot, allowed_updates=["message", "callback_query", "chat_member"])
 
 if __name__ == "__main__":
     asyncio.run(main())
-
