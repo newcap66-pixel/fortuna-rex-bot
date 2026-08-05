@@ -3,35 +3,35 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Roda da Fortuna — Jasino</title>
-<meta name="description" content="Gire a roda e receba seu bonus de boas-vindas.">
+<title>Roda da Fortuna — A360</title>
+<meta name="description" content="Gire a roda e receba seu bonus de boas-vindas de ate 8250 BRL + 150 FS.">
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; }
 body {
   font-family: 'Montserrat', 'Segoe UI', Arial, sans-serif;
-  background: radial-gradient(circle at 50% 30%, #2d1060 0%, #0A0A1A 70%);
+  background: radial-gradient(circle at 50% 30%, #0d3d1f 0%, #0A0A0A 70%);
   color: #fff; min-height: 100%;
   display: flex; align-items: center; justify-content: center;
   overflow: hidden; padding: 20px;
 }
 .wheel-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; max-width: 400px; }
 .wheel-title { font-size: 22px; font-weight: 900; color: #FFD700; margin-bottom: 6px; text-shadow: 0 0 20px rgba(255,215,0,0.6); }
-.wheel-sub { font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 22px; }
+.wheel-sub { font-size: 14px; color: rgba(255,255,255,0.75); margin-bottom: 22px; }
 .wheel-wrap { position: relative; width: 300px; height: 300px; }
 .wheel-arrow { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 34px; z-index: 10; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8)); }
-#wheelCanvas { border-radius: 50%; box-shadow: 0 0 45px rgba(255,215,0,0.5), 0 0 90px rgba(255,100,0,0.2); }
+#wheelCanvas { border-radius: 50%; box-shadow: 0 0 45px rgba(255,215,0,0.5), 0 0 90px rgba(0,180,80,0.25); }
 .wheel-btn { margin-top: 26px; background: linear-gradient(135deg, #FFD700, #FF8C00); color: #000; font-family: inherit; font-size: 19px; font-weight: 900; padding: 17px 52px; border-radius: 50px; border: none; cursor: pointer; box-shadow: 0 4px 30px rgba(255,180,0,0.6); letter-spacing: 1px; animation: btnpulse 1.5s ease-in-out infinite; }
 @keyframes btnpulse { 0%,100% { box-shadow: 0 4px 30px rgba(255,180,0,0.6); } 50% { box-shadow: 0 4px 50px rgba(255,180,0,0.95); } }
 .wheel-btn:disabled { opacity: 0.6; animation: none; cursor: not-allowed; }
 .win-popup { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
 .win-popup.show { display: flex; }
-.win-box { background: linear-gradient(135deg, #1a0a3a, #2d1060); border: 3px solid #FFD700; border-radius: 24px; padding: 32px 24px; text-align: center; max-width: 340px; width: 100%; box-shadow: 0 0 60px rgba(255,215,0,0.4); }
+.win-box { background: linear-gradient(135deg, #0d3d1f, #051a0d); border: 3px solid #FFD700; border-radius: 24px; padding: 32px 24px; text-align: center; max-width: 340px; width: 100%; box-shadow: 0 0 60px rgba(255,215,0,0.4); }
 .win-emoji { font-size: 54px; margin-bottom: 10px; }
 .win-title { font-size: 22px; font-weight: 900; color: #FFD700; margin-bottom: 6px; }
-.win-prize { font-size: 38px; font-weight: 900; color: #fff; margin: 10px 0; text-shadow: 0 0 20px rgba(255,215,0,0.8); }
-.win-sub { font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 24px; }
+.win-prize { font-size: 34px; font-weight: 900; color: #fff; margin: 10px 0; text-shadow: 0 0 20px rgba(255,215,0,0.8); }
+.win-sub { font-size: 14px; color: rgba(255,255,255,0.75); margin-bottom: 24px; }
 .win-cta { display: block; width: 100%; background: linear-gradient(135deg, #00C853, #00E676); color: #000; font-size: 17px; font-weight: 900; padding: 17px; border-radius: 14px; text-decoration: none; text-align: center; box-shadow: 0 4px 30px rgba(0,200,83,0.5); }
 </style>
 </head>
@@ -39,7 +39,7 @@ body {
 
 <div class="wheel-screen" id="wheelScreen">
   <div class="wheel-title">GIRE A RODA DA FORTUNA</div>
-  <div class="wheel-sub">Gire e receba seu bonus de boas-vindas</div>
+  <div class="wheel-sub">Gire e receba seu bonus de boas-vindas ate 8250 BRL + 150 FS</div>
   <div class="wheel-wrap">
     <div class="wheel-arrow">&#9660;</div>
     <canvas id="wheelCanvas" width="300" height="300"></canvas>
@@ -51,15 +51,17 @@ body {
   <div class="win-box">
     <div class="win-emoji">&#127881;</div>
     <div class="win-title">PARABENS!</div>
-    <div class="win-prize" id="winPrize">$10 + 25 Rodadas</div>
-    <div class="win-sub">Cadastre-se e selecione o bonus "Teste $10" para resgatar.</div>
+    <div class="win-prize" id="winPrize">Bonus ate 8250 BRL + 150 FS</div>
+    <div class="win-sub">Cadastre-se em 1 clique e selecione o pacote "Cassino + A360 Exclusives" para resgatar.</div>
     <a href="#" class="win-cta" id="winCta" target="_top">RESGATAR AGORA</a>
   </div>
 </div>
 
 <script>
-var TRACK = 'https://maglead.buzz/click?o=2141&a=13335&link_id=8901';
-var SHEETS = 'https://script.google.com/macros/s/AKfycbyyWyGNiKp-EVu0m_oDhnEPeDJms8kUNta7HCZhV56_3fIHG_7DR8jQ4tvgYLqnjMUCGQ/exec';
+// ── Оффер A360 (o=2093) ───────────────────────────────────────────────
+var TRACK = 'https://maglead.buzz/click?o=2093&a=13335&link_id=8717';
+// Google Apps Script для лога в таблицу (колесо A360)
+var SHEETS = 'https://script.google.com/macros/s/AKfycbxECk6k25rDnq-lNa0LMVO3L1pPRCS_4uKavjtixlnDLxTcHmL1nyZezPPIX9OjT4Gq/exec';
 
 var p = new URLSearchParams(location.search);
 // Propeller иногда отдаёт значения макросов с ведущим "$" ($1108... вместо 1108...)
@@ -70,9 +72,11 @@ function clean(v) {
   if (v.charAt(0) === '$') v = v.slice(1);                        // срезаем ведущий доллар
   return v;
 }
+// Метки: sub1=зона, sub2=click_id, sub3=кампания, banner=креатив
 var sub1 = clean(p.get('sub1'));
 var sub2 = clean(p.get('sub2'));
 var sub3 = clean(p.get('sub3'));
+var banner = clean(p.get('banner'));
 var campaign = clean(p.get('campaign'));
 var t0 = Date.now();
 var device = /mobile|android|iphone|ipad/i.test(navigator.userAgent) ? 'Mobile' : 'Desktop';
@@ -81,11 +85,11 @@ var country = '';
 function buildLink() {
   var u = TRACK;
   // maglead работает на Scaleo. click_id Propeller -> aff_click_id (для постбека).
-  // зона/кампания -> sub_id1..3 (для сегментации).
-  if (sub2) u += '&aff_click_id=' + encodeURIComponent(sub2);
-  if (sub1) u += '&sub_id1=' + encodeURIComponent(sub1);
-  if (sub2) u += '&sub_id2=' + encodeURIComponent(sub2);
-  if (sub3) u += '&sub_id3=' + encodeURIComponent(sub3);
+  // зона/баннер/кампания -> sub_id1..3 (для сегментации).
+  if (sub2)   u += '&aff_click_id=' + encodeURIComponent(sub2);
+  if (sub1)   u += '&sub_id1=' + encodeURIComponent(sub1);
+  if (banner) u += '&sub_id2=' + encodeURIComponent(banner);
+  if (sub3)   u += '&sub_id3=' + encodeURIComponent(sub3);
   return u;
 }
 
@@ -96,8 +100,7 @@ function logEvent(event) {
   var q = new URLSearchParams({
     event: event,
     sub1: sub1,
-    sub2: sub2,
-    sub3: sub3,
+    banner: banner,
     click_id: sub2,
     campaign: sub3 || campaign,
     country: country,
@@ -123,17 +126,18 @@ fetch('https://ipapi.co/json/').then(function(r){return r.json();})
 
 window.addEventListener('pagehide', function(){ logEvent('page_leave'); });
 
+// ── Сегменты колеса под A360 (актуальные бонусы) ──────────────────────
 var segments = [
-  { label: '$10 Teste',   color: '#8B0000', text: '#FFD700' },
-  { label: '25 Rodadas',  color: '#4B0082', text: '#fff'    },
-  { label: 'Cashback',    color: '#006400', text: '#FFD700' },
-  { label: 'Bonus VIP',   color: '#8B4513', text: '#FFD700' },
-  { label: 'Missao',      color: '#00008B', text: '#FFD700' },
-  { label: '25 Rodadas',  color: '#8B0000', text: '#fff'    },
-  { label: '$10 Teste',   color: '#4B0082', text: '#FFD700' },
-  { label: 'Presente',    color: '#006400', text: '#FFD700' }
+  { label: '8250 BRL',   color: '#8B0000', text: '#FFD700' },
+  { label: '150 FS',     color: '#0d3d1f', text: '#fff'    },
+  { label: 'Cashback',   color: '#006400', text: '#FFD700' },
+  { label: 'Bonus VIP',  color: '#8B4513', text: '#FFD700' },
+  { label: 'Pix Bonus',  color: '#00008B', text: '#FFD700' },
+  { label: '150 FS',     color: '#8B0000', text: '#fff'    },
+  { label: '8250 BRL',   color: '#0d3d1f', text: '#FFD700' },
+  { label: 'Presente',   color: '#006400', text: '#FFD700' }
 ];
-var winIndex = 0;
+var winIndex = 0; // всегда выпадает "8250 BRL" (сегмент 0)
 var canvas = document.getElementById('wheelCanvas');
 var ctx = canvas && canvas.getContext('2d');
 var currentAngle = 0, isSpinning = false;
@@ -151,7 +155,7 @@ function drawWheel(angle) {
     ctx.fillStyle = seg.color; ctx.fill();
     ctx.strokeStyle = 'rgba(255,215,0,0.4)'; ctx.lineWidth = 1.5; ctx.stroke();
     ctx.save(); ctx.translate(cx, cy); ctx.rotate(start + arc / 2);
-    ctx.textAlign = 'right'; ctx.fillStyle = seg.text; ctx.font = 'bold 14px Montserrat, sans-serif';
+    ctx.textAlign = 'right'; ctx.fillStyle = seg.text; ctx.font = 'bold 13px Montserrat, sans-serif';
     ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 4; ctx.fillText(seg.label, r - 12, 5); ctx.restore();
   });
   ctx.beginPath(); ctx.arc(cx, cy, 30, 0, 2*Math.PI);
