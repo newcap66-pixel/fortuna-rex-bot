@@ -33,13 +33,15 @@ body {
 .win-prize { font-size: 34px; font-weight: 900; color: #fff; margin: 10px 0; text-shadow: 0 0 20px rgba(255,215,0,0.8); }
 .win-sub { font-size: 14px; color: rgba(255,255,255,0.75); margin-bottom: 24px; }
 .win-cta { display: block; width: 100%; background: linear-gradient(135deg, #00C853, #00E676); color: #000; font-size: 17px; font-weight: 900; padding: 17px; border-radius: 14px; text-decoration: none; text-align: center; box-shadow: 0 4px 30px rgba(0,200,83,0.5); }
+.win-timer { font-size: 15px; font-weight: 900; color: #FF5252; margin-bottom: 16px; letter-spacing: 0.5px; }
+.win-timer span { color: #FFD700; }
 </style>
 </head>
 <body>
 
 <div class="wheel-screen" id="wheelScreen">
-  <div class="wheel-title">GIRE A RODA DA FORTUNA</div>
-  <div class="wheel-sub">Gire e receba seu bonus de boas-vindas ate 8250 BRL + 150 FS</div>
+  <div class="wheel-title">&#128293; VOCE TEM 1 GIRO GRATIS!</div>
+  <div class="wheel-sub">Gire a roda e resgate ate <b>8250 BRL + 150 FS</b> &#8226; So hoje!</div>
   <div class="wheel-wrap">
     <div class="wheel-arrow">&#9660;</div>
     <canvas id="wheelCanvas" width="300" height="300"></canvas>
@@ -50,10 +52,11 @@ body {
 <div class="win-popup" id="winPopup">
   <div class="win-box">
     <div class="win-emoji">&#127881;</div>
-    <div class="win-title">PARABENS!</div>
-    <div class="win-prize" id="winPrize">Bonus ate 8250 BRL + 150 FS</div>
-    <div class="win-sub">Cadastre-se em 1 clique e selecione o pacote "Cassino + A360 Exclusives" para resgatar.</div>
-    <a href="#" class="win-cta" id="winCta" target="_top">RESGATAR AGORA</a>
+    <div class="win-title">PARABENS! VOCE GANHOU!</div>
+    <div class="win-prize" id="winPrize">8250 BRL + 150 FS</div>
+    <div class="win-sub">Clique em <b>RESGATAR</b>, depois toque em <b>CADASTRO</b> no site e crie sua conta em 1 clique para receber seu bonus. &#9889; So hoje!</div>
+    <div class="win-timer">&#9203; Oferta expira em: <span id="timer">05:00</span></div>
+    <a href="#" class="win-cta" id="winCta" target="_top">RESGATAR MEU BONUS &#128293;</a>
   </div>
 </div>
 
@@ -193,6 +196,19 @@ function showWin() {
   cta.href = buildLink();
   cta.onclick = function(){ logEvent('cta_click'); };
   document.getElementById('winPopup').classList.add('show');
+  startTimer();
+}
+
+// Таймер срочности 5:00 (триггер "не откладывай")
+function startTimer() {
+  var total = 5 * 60;
+  var el = document.getElementById('timer');
+  var iv = setInterval(function() {
+    total--;
+    if (total < 0) { total = 0; clearInterval(iv); }
+    var m = Math.floor(total / 60), s = total % 60;
+    if (el) el.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+  }, 1000);
 }
 </script>
 </body>
